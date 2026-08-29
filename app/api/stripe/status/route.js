@@ -20,37 +20,31 @@ export async function POST(req) {
   const { data: userData } = await supabaseAuthed(token).auth.getUser();
   const userId = userData?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Your session has expired — please log in again." }, { status: 401 });
+    return NextResponse.json({ error: "Your session has expired." }, { status: 401 });
   }
-
-  const { email, returnUrl, refreshUrl } = await req.json();
 
   const { data: store } = await supabaseAdmin
     .from("sellers_stores")
-    .select("id, stripe_account_id")
+    .select("id, stripe_account_id, stripe_onboarded")
     .eq("owner_id", userId)
     .maybeSingle();
 
-  if (!store) {
-    return NextResponse.json({ error: "Set up your store first." }, { status: 400 });
+  if (!store?.stripe_account_id) {
+    return NextResponse.json({ onboarded: false });
+  }
+  if (store.stripe_onboarded) {
+    return NextResponse.json({ onboarded: true });
   }
 
-  let accountId = store.stripe_account_id;
-  if (!accountId) {
-    const account = await stripe.accounts.create({ type: "standard", email });
-    accountId = account.id;
+  const account = await stripe.accounts.retrieve(store.stripe_account_id);
+  const onboarded = !!(account.details_submitted && account.charges_enabled);
+
+  if (onboarded) {
     await supabaseAdmin
       .from("sellers_stores")
-      .update({ stripe_account_id: accountId })
+      .update({ stripe_onboarded: true })
       .eq("id", store.id);
   }
 
-  const accountLink = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: refreshUrl,
-    return_url: returnUrl,
-    type: "account_onboarding",
-  });
-
-  return NextResponse.json({ url: accountLink.url });
+  return NextResponse.json({ onboarded });
 }

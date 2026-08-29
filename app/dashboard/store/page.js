@@ -46,8 +46,20 @@ export default function StorePage() {
     setSaving(true);
     setMessage("");
 
+    // Get the current user fresh, right now — not from state that may be
+    // stale or unset if this runs before the page finished loading.
+    const { data: userData } = await supabase.auth.getUser();
+    const currentUserId = userData?.user?.id;
+
+    if (!currentUserId) {
+      setSaving(false);
+      setMessage("You're not logged in — please log in again and retry.");
+      return;
+    }
+    setUserId(currentUserId);
+
     const payload = {
-      owner_id: userId,
+      owner_id: currentUserId,
       store_name: storeName,
       store_slug: slugify(storeName),
       description,

@@ -142,6 +142,7 @@ create policy "Public follows are viewable" on follows for select using (true);
 
 -- Authenticated write access, scoped to the acting user
 create policy "Users manage their own profile" on profiles for update using (auth.uid() = id);
+create policy "Users create their own profile" on profiles for insert with check (auth.uid() = id);
 create policy "Users create their own store" on sellers_stores for insert with check (auth.uid() = owner_id);
 create policy "Owners manage their store" on sellers_stores for update using (auth.uid() = owner_id);
 create policy "Owners manage their products" on products for all using (

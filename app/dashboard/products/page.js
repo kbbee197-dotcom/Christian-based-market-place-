@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Trash2, Pencil } from "lucide-react";
 
+async function authHeaders() {
+  const { data } = await supabase.auth.getSession();
+  const token = data?.session?.access_token;
+  return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+}
+
 export default function ProductsPage() {
   const [storeId, setStoreId] = useState(null);
   const [products, setProducts] = useState([]);
@@ -25,19 +31,13 @@ export default function ProductsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData?.user?.id;
-      if (!uid) return;
+      const headers = await authHeaders();
+      const res = await fetch("/api/me/store", { method: "POST", headers });
+      const json = await res.json();
 
-      const { data: store } = await supabase
-        .from("sellers_stores")
-        .select("id")
-        .eq("owner_id", uid)
-        .maybeSingle();
-
-      if (store) {
-        setStoreId(store.id);
-        loadProducts(store.id);
+      if (json.store) {
+        setStoreId(json.store.id);
+        loadProducts(json.store.id);
       }
     }
     load();
@@ -66,19 +66,26 @@ export default function ProductsPage() {
     setSaving(true);
     setMessage("");
 
-    const payload = {
-      title,
-      price_cents: Math.round(parseFloat(price) * 100),
-      image_urls: imageUrl ? [imageUrl] : [],
-    };
+    const headers = await authHeaders();
+    const priceCents = Math.round(parseFloat(price) * 100);
 
-    const { error } = editingId
-      ? await supabase.from("products").update(payload).eq("id", editingId)
-      : await supabase.from("products").insert({ ...payload, store_id: storeId });
+    const res = editingId
+      ? await fetch("/api/products", {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ productId: editingId, storeId, title, priceCents, imageUrl }),
+        })
+      : await fetch("/api/products", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ storeId, title, priceCents, imageUrl }),
+        });
 
+    const json = await res.json();
     setSaving(false);
-    if (error) {
-      setMessage(error.message);
+
+    if (!res.ok) {
+      setMessage(json.error || "Something went wrong.");
     } else {
       resetForm();
       loadProducts(storeId);
@@ -86,7 +93,12 @@ export default function ProductsPage() {
   }
 
   async function deleteProduct(id) {
-    await supabase.from("products").delete().eq("id", id);
+    const headers = await authHeaders();
+    await fetch("/api/products", {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({ productId: id, storeId }),
+    });
     if (editingId === id) resetForm();
     loadProducts(storeId);
   }

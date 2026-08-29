@@ -19,15 +19,9 @@ export default function StorePage() {
 
   useEffect(() => {
     async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData?.user?.id;
-      if (!uid) return;
-
-      const { data } = await supabase
-        .from("sellers_stores")
-        .select("*")
-        .eq("owner_id", uid)
-        .maybeSingle();
+      const headers = await authHeaders();
+      const storeRes = await fetch("/api/me/store", { method: "POST", headers });
+      const { store: data } = await storeRes.json();
 
       if (data) {
         setStore(data);
@@ -36,9 +30,8 @@ export default function StorePage() {
 
         if (data.stripe_account_id && !data.stripe_onboarded) {
           setCheckingStripe(true);
-          const headers = await authHeaders();
-          const res = await fetch("/api/stripe/status", { method: "POST", headers });
-          const json = await res.json();
+          const statusRes = await fetch("/api/stripe/status", { method: "POST", headers });
+          const json = await statusRes.json();
           if (json.onboarded) {
             setStore((s) => ({ ...s, stripe_onboarded: true }));
           }
@@ -54,21 +47,11 @@ export default function StorePage() {
     setSaving(true);
     setMessage("");
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-
-    if (!token) {
-      setSaving(false);
-      setMessage("You're not logged in — please log in again and retry.");
-      return;
-    }
+    const headers = await authHeaders();
 
     const res = await fetch("/api/store", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
       body: JSON.stringify({ storeName, description }),
     });
     const json = await res.json();

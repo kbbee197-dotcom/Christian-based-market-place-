@@ -9,14 +9,15 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user) return;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
 
-      const { data } = await supabase
-        .from("sellers_stores")
-        .select("*")
-        .eq("owner_id", userData.user.id)
-        .maybeSingle();
+      const res = await fetch("/api/me/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const { store: data } = await res.json();
 
       setStore(data);
       setLoading(false);

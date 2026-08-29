@@ -15,16 +15,18 @@ export default function UploadPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData?.user?.id;
-      if (!uid) return;
-      setUserId(uid);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
 
-      const { data: store } = await supabase
-        .from("sellers_stores")
-        .select("id")
-        .eq("owner_id", uid)
-        .maybeSingle();
+      const { data: userData } = await supabase.auth.getUser();
+      setUserId(userData?.user?.id);
+
+      const storeRes = await fetch("/api/me/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const { store } = await storeRes.json();
 
       if (store) {
         const { data: prods } = await supabase
@@ -38,10 +40,6 @@ export default function UploadPage() {
   }, []);
 
   async function uploadToCloudinary(videoFile) {
-    // Requires an UNSIGNED upload preset created in your Cloudinary
-    // dashboard: Settings > Upload > Upload presets > Add upload preset
-    // > Signing Mode: Unsigned. Name it anything, then put that name
-    // in NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET below (or hardcode it here).
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
@@ -72,15 +70,21 @@ export default function UploadPage() {
       const uploaded = await uploadToCloudinary(file);
       setProgressLabel("Publishing post...");
 
-      const { error } = await supabase.from("videos_posts").insert({
-        creator_id: userId,
-        product_id: productId || null,
-        video_url: uploaded.secure_url,
-        thumbnail_url: uploaded.secure_url.replace(/\.[a-z0-9]+$/, ".jpg"),
-        caption,
-      });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authToken = sessionData?.session?.access_token;
 
-      if (error) throw error;
+      const res = await fetch("/api/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({
+          productId: productId || null,
+          videoUrl: uploaded.secure_url,
+          thumbnailUrl: uploaded.secure_url.replace(/\.[a-z0-9]+$/, ".jpg"),
+          caption,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to publish.");
 
       setMessage("Published! Check the feed.");
       setCaption("");

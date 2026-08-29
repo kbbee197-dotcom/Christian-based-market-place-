@@ -21,11 +21,27 @@ export default function LoginPage() {
       password,
     });
 
-    setLoading(false);
     if (loginError) {
+      setLoading(false);
       setError(loginError.message);
       return;
     }
+
+    const { data: userData } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("banned")
+      .eq("id", userData.user.id)
+      .single();
+
+    if (profile?.banned) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setError("This account has been suspended. Contact support if you believe this is a mistake.");
+      return;
+    }
+
+    setLoading(false);
     router.push("/dashboard");
   }
 

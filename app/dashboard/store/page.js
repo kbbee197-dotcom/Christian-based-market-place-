@@ -83,20 +83,31 @@ export default function StorePage() {
   }
 
   async function connectStripe() {
-    const { data: userData } = await supabase.auth.getUser();
-    const headers = await authHeaders();
-    const res = await fetch("/api/stripe/connect", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        email: userData?.user?.email,
-        returnUrl: `${window.location.origin}/dashboard/store`,
-        refreshUrl: `${window.location.origin}/dashboard/store`,
-      }),
-    });
-    const json = await res.json();
-    if (json.url) window.location.href = json.url;
-    else setMessage(json.error || "Couldn't start Stripe connection.");
+    setCheckingStripe(true);
+    setMessage("");
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const headers = await authHeaders();
+      const res = await fetch("/api/stripe/connect", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          email: userData?.user?.email,
+          returnUrl: `${window.location.origin}/dashboard/store`,
+          refreshUrl: `${window.location.origin}/dashboard/store`,
+        }),
+      });
+      const json = await res.json();
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        setMessage(json.error || "Couldn't start Stripe connection.");
+        setCheckingStripe(false);
+      }
+    } catch (err) {
+      setMessage("Connection error: " + err.message);
+      setCheckingStripe(false);
+    }
   }
 
   return (

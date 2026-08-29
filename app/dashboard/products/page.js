@@ -66,29 +66,34 @@ export default function ProductsPage() {
     setSaving(true);
     setMessage("");
 
-    const headers = await authHeaders();
-    const priceCents = Math.round(parseFloat(price) * 100);
+    try {
+      const headers = await authHeaders();
+      const priceCents = Math.round(parseFloat(price) * 100);
 
-    const res = editingId
-      ? await fetch("/api/products", {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ productId: editingId, storeId, title, priceCents, imageUrl }),
-        })
-      : await fetch("/api/products", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ storeId, title, priceCents, imageUrl }),
-        });
+      const res = editingId
+        ? await fetch("/api/products", {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ productId: editingId, storeId, title, priceCents, imageUrl }),
+          })
+        : await fetch("/api/products", {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ storeId, title, priceCents, imageUrl }),
+          });
 
-    const json = await res.json();
-    setSaving(false);
+      const json = await res.json();
 
-    if (!res.ok) {
-      setMessage(json.error || "Something went wrong.");
-    } else {
-      resetForm();
-      loadProducts(storeId);
+      if (!res.ok) {
+        setMessage(json.error || "Something went wrong.");
+      } else {
+        resetForm();
+        loadProducts(storeId);
+      }
+    } catch (err) {
+      setMessage("Error: " + err.message);
+    } finally {
+      setSaving(false);
     }
   }
 

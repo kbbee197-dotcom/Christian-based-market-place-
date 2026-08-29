@@ -80,6 +80,7 @@ function FeedCard({ post }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [added, setAdded] = useState(false);
   const [authNeeded, setAuthNeeded] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function currentUserId() {
     const { data } = await supabase.auth.getUser();
@@ -98,6 +99,34 @@ function FeedCard({ post }) {
       setLikeCount((c) => c + 1);
     }
     setLiked((v) => !v);
+  }
+
+  async function handleShare() {
+    const shareUrl = `${window.location.origin}/post/${post.id}`;
+    const shareData = {
+      title: post.creator?.name ? `${post.creator.name} on the marketplace` : "Check this out",
+      text: post.caption || "",
+      url: shareUrl,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (clipErr) {
+          console.error("Share failed:", clipErr);
+        }
+      }
+    }
   }
 
   async function toggleFollow() {
@@ -172,7 +201,7 @@ function FeedCard({ post }) {
       <div className="absolute right-3 bottom-28 z-10 flex flex-col items-center gap-5">
         <ActionButton icon={<Heart className={liked ? "fill-clay text-clay" : ""} />} label={likeCount} onClick={toggleLike} />
         <ActionButton icon={<MessageCircle />} label={post.commentCount} onClick={() => setCommentsOpen(true)} />
-        <ActionButton icon={<Share2 />} label="Share" />
+        <ActionButton icon={<Share2 />} label={copied ? "Copied!" : "Share"} onClick={handleShare} />
       </div>
 
       {post.product && (

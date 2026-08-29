@@ -46,39 +46,31 @@ export default function StorePage() {
     setSaving(true);
     setMessage("");
 
-    // Get the current user fresh, right now — not from state that may be
-    // stale or unset if this runs before the page finished loading.
-    const { data: userData } = await supabase.auth.getUser();
-    const currentUserId = userData?.user?.id;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
 
-    if (!currentUserId) {
+    if (!token) {
       setSaving(false);
       setMessage("You're not logged in — please log in again and retry.");
       return;
     }
-    setUserId(currentUserId);
 
-    const payload = {
-      owner_id: currentUserId,
-      store_name: storeName,
-      store_slug: slugify(storeName),
-      description,
-    };
-
-    const { data, error } = store
-      ? await supabase
-          .from("sellers_stores")
-          .update(payload)
-          .eq("id", store.id)
-          .select()
-          .single()
-      : await supabase.from("sellers_stores").insert(payload).select().single();
+    const res = await fetch("/api/store", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ storeName, description }),
+    });
+    const json = await res.json();
 
     setSaving(false);
-    if (error) {
-      setMessage(error.message);
+    if (!res.ok) {
+      setMessage(json.error || "Something went wrong.");
     } else {
-      setStore(data);
+      setStore(json.store);
+      setUserId(json.store.owner_id);
       setMessage("Saved.");
     }
   }

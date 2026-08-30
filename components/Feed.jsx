@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut } from "lucide-react";
+import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 function normalize(row) {
@@ -83,6 +83,7 @@ function TopBar() {
         {isVendor && (
           <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
         )}
+        <a href="/settings" aria-label="Settings"><Settings className="w-5 h-5 text-parchment" /></a>
         <button onClick={logout} aria-label="Log out"><LogOut className="w-5 h-5 text-parchment" /></button>
       </div>
     </div>

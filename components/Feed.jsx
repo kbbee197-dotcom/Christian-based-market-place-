@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import BottomNav from "@/components/BottomNav";
 
 function normalize(row) {
   return {
@@ -49,6 +50,7 @@ export default function Feed({ initialPosts = [] }) {
           ))}
         </div>
       )}
+      <BottomNav />
     </>
   );
 }

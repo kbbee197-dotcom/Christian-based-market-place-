@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Trash2 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 export default function CartPage() {
   const [items, setItems] = useState([]);
@@ -112,6 +113,7 @@ export default function CartPage() {
           </button>
         </>
       )}
+      <BottomNav />
     </main>
   );
 }

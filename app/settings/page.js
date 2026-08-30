@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import BottomNav from "@/components/BottomNav";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -84,6 +85,7 @@ export default function SettingsPage() {
       >
         Log out
       </button>
+      <BottomNav />
     </div>
   );
 }

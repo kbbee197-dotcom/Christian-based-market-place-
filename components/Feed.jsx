@@ -54,6 +54,22 @@ export default function Feed({ initialPosts = [] }) {
 }
 
 function TopBar() {
+  const [isVendor, setIsVendor] = useState(false);
+
+  useEffect(() => {
+    async function checkVendor() {
+      const { data } = await supabase.auth.getUser();
+      if (!data?.user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", data.user.id)
+        .single();
+      setIsVendor(profile?.account_type === "vendor");
+    }
+    checkVendor();
+  }, []);
+
   async function logout() {
     await supabase.auth.signOut();
     window.location.href = "/login";
@@ -64,7 +80,9 @@ function TopBar() {
       <div className="flex items-center gap-4 pointer-events-auto">
         <a href="/cart" aria-label="Cart"><ShoppingCart className="w-5 h-5 text-parchment" /></a>
         <a href="/orders" aria-label="Orders"><Receipt className="w-5 h-5 text-parchment" /></a>
-        <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
+        {isVendor && (
+          <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
+        )}
         <button onClick={logout} aria-label="Log out"><LogOut className="w-5 h-5 text-parchment" /></button>
       </div>
     </div>

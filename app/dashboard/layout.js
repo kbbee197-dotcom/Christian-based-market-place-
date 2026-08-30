@@ -17,13 +17,27 @@ export default function DashboardLayout({ children }) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    async function check() {
+      const { data } = await supabase.auth.getUser();
       if (!data?.user) {
         router.replace("/login");
-      } else {
-        setChecked(true);
+        return;
       }
-    });
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profile?.account_type !== "vendor") {
+        router.replace("/feed");
+        return;
+      }
+
+      setChecked(true);
+    }
+    check();
   }, [router]);
 
   if (!checked) {

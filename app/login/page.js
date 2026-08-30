@@ -30,7 +30,7 @@ export default function LoginPage() {
     const { data: userData } = await supabase.auth.getUser();
     const { data: profile } = await supabase
       .from("profiles")
-      .select("banned")
+      .select("banned, account_type")
       .eq("id", userData.user.id)
       .single();
 
@@ -42,7 +42,12 @@ export default function LoginPage() {
     }
 
     setLoading(false);
-    router.push("/dashboard");
+
+    if (profile?.account_type === "vendor") {
+      router.push("/dashboard");
+    } else {
+      router.push("/feed");
+    }
   }
 
   return (

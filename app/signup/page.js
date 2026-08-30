@@ -9,6 +9,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [accountType, setAccountType] = useState("shopper");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,17 +35,45 @@ export default function SignupPage() {
         id: data.user.id,
         username,
         display_name: username,
+        account_type: accountType,
       });
     }
 
     setLoading(false);
-    router.push("/dashboard");
+
+    if (accountType === "vendor") {
+      router.push("/dashboard");
+    } else {
+      router.push("/feed");
+    }
   }
 
   return (
     <main className="min-h-dvh flex items-center justify-center bg-ink text-parchment px-6">
       <form onSubmit={handleSignup} className="w-full max-w-sm">
         <h1 className="font-display text-2xl font-semibold mb-6">Create your account</h1>
+
+        <label className="block font-body text-sm text-slate mb-2">Are you here to shop or sell?</label>
+        <div className="flex gap-3 mb-4">
+          <button
+            type="button"
+            onClick={() => setAccountType("shopper")}
+            className={`flex-1 py-3 rounded-full font-body font-semibold text-sm border ${
+              accountType === "shopper" ? "bg-wick text-ink border-wick" : "border-white/10 text-slate"
+            }`}
+          >
+            Shop
+          </button>
+          <button
+            type="button"
+            onClick={() => setAccountType("vendor")}
+            className={`flex-1 py-3 rounded-full font-body font-semibold text-sm border ${
+              accountType === "vendor" ? "bg-wick text-ink border-wick" : "border-white/10 text-slate"
+            }`}
+          >
+            Sell
+          </button>
+        </div>
 
         <label className="block font-body text-sm text-slate mb-1">Username</label>
         <input

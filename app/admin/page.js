@@ -18,8 +18,17 @@ export default function AdminStores() {
     load();
   }, []);
 
-  async function toggleApproved(id, approved) {
-    await supabase.from("sellers_stores").update({ approved: !approved }).eq("id", id);
+  async function toggleApproved(id, approved, ownerId) {
+    const newApproved = !approved;
+    await supabase.from("sellers_stores").update({ approved: newApproved }).eq("id", id);
+
+    // Approving a store also grants vendor status. Unapproving does not
+    // strip it back to shopper, since the person already had access —
+    // suspend their account instead if you need to fully revoke access.
+    if (newApproved && ownerId) {
+      await supabase.from("profiles").update({ account_type: "vendor" }).eq("id", ownerId);
+    }
+
     load();
   }
 
@@ -34,7 +43,7 @@ export default function AdminStores() {
             </p>
           </div>
           <button
-            onClick={() => toggleApproved(s.id, s.approved)}
+            onClick={() => toggleApproved(s.id, s.approved, s.owner_id)}
             className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
               s.approved ? "bg-white/10 text-slate" : "bg-wick text-ink"
             }`}

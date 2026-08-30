@@ -32,16 +32,6 @@ export default function SettingsPage() {
     load();
   }, [router]);
 
-  async function becomeVendor() {
-    setSwitching(true);
-    const { data: userData } = await supabase.auth.getUser();
-    await supabase
-      .from("profiles")
-      .update({ account_type: "vendor" })
-      .eq("id", userData.user.id);
-    router.push("/dashboard/store");
-  }
-
   async function logout() {
     await supabase.auth.signOut();
     window.location.href = "/login";
@@ -79,13 +69,12 @@ export default function SettingsPage() {
           <p className="font-body text-sm text-slate mb-3">
             Want to sell your own products or videos?
           </p>
-          <button
-            onClick={becomeVendor}
-            disabled={switching}
-            className="bg-wick text-ink font-semibold px-6 py-3 rounded-full disabled:opacity-60"
+          <a
+            href="/apply-to-sell"
+            className="inline-block bg-wick text-ink font-semibold px-6 py-3 rounded-full"
           >
-            {switching ? "Setting up..." : "Start selling"}
-          </button>
+            Apply to sell
+          </a>
         </div>
       )}
 

@@ -28,11 +28,26 @@ export default function LoginPage() {
     }
 
     const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
+    let { data: profile } = await supabase
       .from("profiles")
       .select("banned, account_type")
       .eq("id", userData.user.id)
       .single();
+
+    if (!profile) {
+      const meta = userData.user.user_metadata || {};
+      const { data: newProfile } = await supabase
+        .from("profiles")
+        .insert({
+          id: userData.user.id,
+          username: meta.username || userData.user.email,
+          display_name: meta.username || userData.user.email,
+          account_type: meta.account_type || "shopper",
+        })
+        .select()
+        .single();
+      profile = newProfile;
+    }
 
     if (profile?.banned) {
       await supabase.auth.signOut();

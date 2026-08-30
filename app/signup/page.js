@@ -21,25 +21,25 @@ export default function SignupPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username,
+          account_type: accountType,
+        },
+      },
     });
+
+    setLoading(false);
 
     if (signUpError) {
       setError(signUpError.message);
-      setLoading(false);
       return;
     }
 
-    // Create the matching public profile row.
-    if (data.user) {
-      await supabase.from("profiles").insert({
-        id: data.user.id,
-        username,
-        display_name: username,
-        account_type: accountType,
-      });
+    if (!data.session) {
+      setError("Almost done! Check your email and tap the confirmation link, then log in.");
+      return;
     }
-
-    setLoading(false);
 
     if (accountType === "vendor") {
       router.push("/dashboard");

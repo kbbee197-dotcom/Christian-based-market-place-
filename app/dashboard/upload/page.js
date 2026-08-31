@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import CameraRecorder from "@/components/CameraRecorder";
 
 export default function UploadPage() {
   const [userId, setUserId] = useState(null);
@@ -12,6 +13,7 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [progressLabel, setProgressLabel] = useState("");
   const [message, setMessage] = useState("");
+  const [showCamera, setShowCamera] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -102,15 +104,49 @@ export default function UploadPage() {
     <div className="max-w-md">
       <form onSubmit={handlePublish} className="space-y-4">
         <div>
-          <label className="block font-body text-sm text-slate mb-1">Video file</label>
-          <input
-            required
-            type="file"
-            accept="video/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full font-body text-sm"
-          />
+          <label className="block font-body text-sm text-slate mb-1">Video</label>
+          {file ? (
+            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3">
+              <span className="font-body text-sm truncate max-w-[200px]">{file.name}</span>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                className="font-body text-xs text-clay underline"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCamera(true)}
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body text-sm"
+              >
+                Record video
+              </button>
+              <label className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body text-sm text-center cursor-pointer">
+                Choose file
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          )}
         </div>
+
+        {showCamera && (
+          <CameraRecorder
+            onCapture={(capturedFile) => {
+              setFile(capturedFile);
+              setShowCamera(false);
+            }}
+            onCancel={() => setShowCamera(false)}
+          />
+        )}
 
         <div>
           <label className="block font-body text-sm text-slate mb-1">Caption</label>

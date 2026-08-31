@@ -9,11 +9,16 @@ export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [isVendor, setIsVendor] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     async function checkVendor() {
       const { data } = await supabase.auth.getUser();
-      if (!data?.user) return;
+      if (!data?.user) {
+        setIsLoggedIn(false);
+        return;
+      }
+      setIsLoggedIn(true);
       const { data: profile } = await supabase
         .from("profiles")
         .select("account_type")
@@ -25,7 +30,13 @@ export default function BottomNav() {
   }, []);
 
   function handleCreate() {
-    router.push(isVendor ? "/dashboard/upload" : "/apply-to-sell");
+    if (!isLoggedIn) {
+      router.push("/login");
+    } else if (isVendor) {
+      router.push("/dashboard/upload");
+    } else {
+      router.push("/apply-to-sell");
+    }
   }
 
   const tabs = [

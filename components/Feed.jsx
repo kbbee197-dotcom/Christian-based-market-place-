@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
 
@@ -78,15 +78,13 @@ function TopBar() {
   }
 
   return (
-    <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-end gap-4 px-4 py-3 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+    <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-end px-4 py-3 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
       <div className="flex items-center gap-4 pointer-events-auto">
-        <a href="/cart" aria-label="Cart"><ShoppingCart className="w-5 h-5 text-parchment" /></a>
         <a href="/orders" aria-label="Orders"><Receipt className="w-5 h-5 text-parchment" /></a>
         {isVendor && (
           <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
         )}
-        <a href="/settings" aria-label="Settings"><Settings className="w-5 h-5 text-parchment" /></a>
-        <button onClick={logout} aria-label="Log out"><LogOut className="w-5 h-5 text-parchment" /></button>
+        <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
       </div>
     </div>
   );

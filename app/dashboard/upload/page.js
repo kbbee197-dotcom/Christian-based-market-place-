@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CameraRecorder from "@/components/CameraRecorder";
+import ThumbnailPicker from "@/components/ThumbnailPicker";
 
 export default function UploadPage() {
   const [userId, setUserId] = useState(null);
@@ -14,6 +15,7 @@ export default function UploadPage() {
   const [progressLabel, setProgressLabel] = useState("");
   const [message, setMessage] = useState("");
   const [showCamera, setShowCamera] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -41,17 +43,17 @@ export default function UploadPage() {
     load();
   }, []);
 
-  async function uploadToCloudinary(videoFile) {
+  async function uploadToCloudinary(mediaFile, resourceType) {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
     const formData = new FormData();
-    formData.append("file", videoFile);
+    formData.append("file", mediaFile);
     formData.append("upload_preset", preset);
-    formData.append("resource_type", "video");
+    formData.append("resource_type", resourceType);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
       { method: "POST", body: formData }
     );
     if (!res.ok) throw new Error("Upload to Cloudinary failed");
@@ -69,7 +71,15 @@ export default function UploadPage() {
     setProgressLabel("Uploading video...");
 
     try {
-      const uploaded = await uploadToCloudinary(file);
+      const uploaded = await uploadToCloudinary(file, "video");
+
+      let thumbnailUrl = uploaded.secure_url.replace(/\.[a-z0-9]+$/, ".jpg");
+      if (thumbnailFile) {
+        setProgressLabel("Uploading cover photo...");
+        const uploadedThumb = await uploadToCloudinary(thumbnailFile, "image");
+        thumbnailUrl = uploadedThumb.secure_url;
+      }
+
       setProgressLabel("Publishing post...");
 
       const { data: sessionData } = await supabase.auth.getSession();
@@ -81,7 +91,7 @@ export default function UploadPage() {
         body: JSON.stringify({
           productId: productId || null,
           videoUrl: uploaded.secure_url,
-          thumbnailUrl: uploaded.secure_url.replace(/\.[a-z0-9]+$/, ".jpg"),
+          thumbnailUrl,
           caption,
         }),
       });
@@ -91,6 +101,7 @@ export default function UploadPage() {
       setMessage("Published! Check the feed.");
       setCaption("");
       setFile(null);
+      setThumbnailFile(null);
       setProductId("");
     } catch (err) {
       setMessage(err.message);
@@ -146,6 +157,10 @@ export default function UploadPage() {
             }}
             onCancel={() => setShowCamera(false)}
           />
+        )}
+
+        {file && (
+          <ThumbnailPicker file={file} onSelect={setThumbnailFile} />
         )}
 
         <div>

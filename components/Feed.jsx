@@ -6,6 +6,22 @@ import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart,
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
 
+async function getToken() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session?.access_token || null;
+}
+
+async function callSocial(payload, token) {
+  return fetch("/api/social", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 function normalize(row) {
   return {
     id: row.id,
@@ -110,14 +126,13 @@ function FeedCard({ post }) {
     const userId = await currentUserId();
     if (!userId) return setAuthNeeded(true);
 
-    if (liked) {
-      await supabase.from("likes").delete().eq("user_id", userId).eq("post_id", post.id);
-      setLikeCount((c) => c - 1);
-    } else {
-      await supabase.from("likes").insert({ user_id: userId, post_id: post.id });
-      setLikeCount((c) => c + 1);
-    }
-    setLiked((v) => !v);
+    const token = await getToken();
+    const nextOn = !liked;
+
+    await callSocial({ type: "like", postId: post.id, on: nextOn }, token);
+
+    setLikeCount((c) => (nextOn ? c + 1 : c - 1));
+    setLiked(nextOn);
   }
 
   async function handleShare() {
@@ -152,12 +167,12 @@ function FeedCard({ post }) {
     const userId = await currentUserId();
     if (!userId) return setAuthNeeded(true);
 
-    if (following) {
-      await supabase.from("follows").delete().eq("follower_id", userId).eq("creator_id", post.creator.id);
-    } else {
-      await supabase.from("follows").insert({ follower_id: userId, creator_id: post.creator.id });
-    }
-    setFollowing((v) => !v);
+    const token = await getToken();
+    const nextOn = !following;
+
+    await callSocial({ type: "follow", creatorId: post.creator.id, on: nextOn }, token);
+
+    setFollowing(nextOn);
   }
 
   async function addToCart() {
@@ -312,7 +327,8 @@ function CommentDrawer({ postId, onClose, onAuthNeeded }) {
     if (!userData?.user) return onAuthNeeded();
 
     setPosting(true);
-    await supabase.from("comments").insert({ post_id: postId, author_id: userData.user.id, body: text.trim() });
+    const token = await getToken();
+    await callSocial({ type: "comment", postId, body: text.trim() }, token);
     setText("");
     setPosting(false);
     load();

@@ -49,6 +49,21 @@ export async function POST(req) {
             .eq("user_id", order.buyer_id)
             .in("product_id", productIds);
         }
+
+        const { data: store } = await supabaseAdmin
+          .from("sellers_stores")
+          .select("owner_id")
+          .eq("id", order.store_id)
+          .single();
+
+        if (store?.owner_id) {
+          await supabaseAdmin.from("notifications").insert({
+            recipient_id: store.owner_id,
+            actor_id: order.buyer_id,
+            type: "order",
+            order_id: order.id,
+          });
+        }
       }
     }
   }

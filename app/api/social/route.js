@@ -15,6 +15,17 @@ async function verifyUser(req) {
   return data?.user?.id || null;
 }
 
+async function notify({ recipientId, actorId, type, postId = null, orderId = null }) {
+  if (!recipientId || recipientId === actorId) return;
+  await supabaseAdmin.from("notifications").insert({
+    recipient_id: recipientId,
+    actor_id: actorId,
+    type,
+    post_id: postId,
+    order_id: orderId,
+  });
+}
+
 export async function POST(req) {
   const userId = await verifyUser(req);
   if (!userId) {
@@ -26,6 +37,21 @@ export async function POST(req) {
   if (type === "like") {
     if (on) {
       await supabaseAdmin.from("likes").upsert({ user_id: userId, post_id: postId });
+
+      const { data: post } = await supabaseAdmin
+        .from("videos_posts")
+        .select("author_id")
+        .eq("id", postId)
+        .single();
+
+      if (post) {
+        await notify({
+          recipientId: post.author_id,
+          actorId: userId,
+          type: "like",
+          postId,
+        });
+      }
     } else {
       await supabaseAdmin.from("likes").delete().eq("user_id", userId).eq("post_id", postId);
     }
@@ -35,6 +61,12 @@ export async function POST(req) {
   if (type === "follow") {
     if (on) {
       await supabaseAdmin.from("follows").upsert({ follower_id: userId, creator_id: creatorId });
+
+      await notify({
+        recipientId: creatorId,
+        actorId: userId,
+        type: "follow",
+      });
     } else {
       await supabaseAdmin.from("follows").delete().eq("follower_id", userId).eq("creator_id", creatorId);
     }
@@ -61,6 +93,22 @@ export async function POST(req) {
       .select("id, body, created_at, author:profiles(username, display_name)")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    const { data: post } = await supabaseAdmin
+      .from("videos_posts")
+      .select("author_id")
+      .eq("id", postId)
+      .single();
+
+    if (post) {
+      await notify({
+        recipientId: post.author_id,
+        actorId: userId,
+        type: "comment",
+        postId,
+      });
+    }
+
     return NextResponse.json({ comment: data });
   }
 

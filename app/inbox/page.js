@@ -14,6 +14,7 @@ const TYPE_TEXT = {
 export default function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [debugError, setDebugError] = useState(null);
 
   useEffect(() => {
     loadNotifications();
@@ -29,12 +30,16 @@ export default function InboxPage() {
       return;
     }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("notifications")
       .select("id, type, read, created_at, actor:profiles!notifications_actor_id_fkey(username, display_name)")
       .eq("recipient_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
+
+    if (error) {
+      setDebugError(JSON.stringify(error));
+    }
 
     setNotifications(data || []);
     setLoading(false);
@@ -50,6 +55,10 @@ export default function InboxPage() {
       <h1 className="font-display text-lg font-semibold mb-6">Inbox</h1>
 
       {loading && <p className="font-body text-slate text-sm">Loading...</p>}
+
+      {debugError && (
+        <p className="font-mono text-xs text-red-400 mb-4 break-all">{debugError}</p>
+      )}
 
       {!loading && notifications.length === 0 && (
         <p className="font-body text-slate text-sm">No notifications yet.</p>

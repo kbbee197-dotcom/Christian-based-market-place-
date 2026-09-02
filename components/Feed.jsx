@@ -340,7 +340,7 @@ function CommentDrawer({ postId, onClose, onAuthNeeded }) {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="fixed inset-x-0 bottom-0 z-30 bg-parchment text-ink rounded-t-3xl px-6 pt-5 pb-6 max-h-[70dvh] flex flex-col"
+      className="fixed inset-x-0 bottom-0 z-[60] bg-parchment text-ink rounded-t-3xl px-6 pt-5 pb-[calc(env(safe-area-inset-bottom)+88px)] max-h-[70dvh] flex flex-col"
     >
       <div className="w-10 h-1 bg-ink/15 rounded-full mx-auto mb-4" />
       <div className="flex items-center justify-between mb-4">

@@ -25,6 +25,7 @@ export default function InboxPage() {
 
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
+    setDebugError("userId: " + JSON.stringify(userId));
     if (!userId) {
       setLoading(false);
       return;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings, Search } from "lucide-react";
+import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings, Search, Bell } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
 
@@ -101,6 +101,7 @@ function TopBar() {
           <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
         )}
         <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
+        <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
       </div>
     </div>
   );

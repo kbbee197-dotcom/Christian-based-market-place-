@@ -16,23 +16,14 @@ async function verifyUser(req) {
 }
 
 async function notify({ recipientId, actorId, type, postId = null, orderId = null }) {
-  console.log("notify() called with:", { recipientId, actorId, type, postId, orderId });
-  if (!recipientId || recipientId === actorId) {
-    console.log("notify() skipped: missing recipientId or recipientId === actorId");
-    return;
-  }
-  const { error } = await supabaseAdmin.from("notifications").insert({
+  if (!recipientId || recipientId === actorId) return;
+  await supabaseAdmin.from("notifications").insert({
     recipient_id: recipientId,
     actor_id: actorId,
     type,
     post_id: postId,
     order_id: orderId,
   });
-  if (error) {
-    console.log("notify() insert ERROR:", error.message);
-  } else {
-    console.log("notify() insert SUCCESS");
-  }
 }
 
 export async function POST(req) {
@@ -47,13 +38,11 @@ export async function POST(req) {
     if (on) {
       await supabaseAdmin.from("likes").upsert({ user_id: userId, post_id: postId });
 
-      const { data: post, error: postLookupError } = await supabaseAdmin
+      const { data: post } = await supabaseAdmin
         .from("videos_posts")
         .select("creator_id")
         .eq("id", postId)
         .single();
-
-      console.log("like: post lookup result:", post, "error:", postLookupError?.message);
 
       if (post) {
         await notify({

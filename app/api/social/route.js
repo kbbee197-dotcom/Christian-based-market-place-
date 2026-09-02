@@ -49,7 +49,7 @@ export async function POST(req) {
 
       const { data: post, error: postLookupError } = await supabaseAdmin
         .from("videos_posts")
-        .select("author_id")
+        .select("creator_id")
         .eq("id", postId)
         .single();
 
@@ -57,7 +57,7 @@ export async function POST(req) {
 
       if (post) {
         await notify({
-          recipientId: post.author_id,
+          recipientId: post.creator_id,
           actorId: userId,
           type: "like",
           postId,
@@ -107,13 +107,13 @@ export async function POST(req) {
 
     const { data: post } = await supabaseAdmin
       .from("videos_posts")
-      .select("author_id")
+      .select("creator_id")
       .eq("id", postId)
       .single();
 
     if (post) {
       await notify({
-        recipientId: post.author_id,
+        recipientId: post.creator_id,
         actorId: userId,
         type: "comment",
         postId,

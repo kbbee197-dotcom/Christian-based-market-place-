@@ -70,8 +70,18 @@ export default function SettingsPage() {
     setSavingBio(true);
     setMessage("");
     const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase.from("profiles").update({ bio }).eq("id", userData.user.id);
-    if (error) setMessage("Couldn't save bio: " + error.message);
+    const { data: updated, error } = await supabase
+      .from("profiles")
+      .update({ bio })
+      .eq("id", userData.user.id)
+      .select();
+    if (error) {
+      setMessage("Couldn't save bio: " + error.message);
+    } else if (!updated || updated.length === 0) {
+      setMessage("Save didn't return a row — likely blocked by a permissions rule.");
+    } else {
+      setMessage("Bio saved!");
+    }
     setSavingBio(false);
   }
 

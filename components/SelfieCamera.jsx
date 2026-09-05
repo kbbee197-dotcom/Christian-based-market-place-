@@ -69,7 +69,7 @@ export default function SelfieCamera({ onCapture, onCancel }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+    <div className="fixed inset-0 z-[60] bg-black flex flex-col">
       <div className="flex items-center justify-between px-4 py-3">
         <button onClick={onCancel} aria-label="Close">
           <X className="w-6 h-6 text-white" />
@@ -99,7 +99,7 @@ export default function SelfieCamera({ onCapture, onCancel }) {
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      <div className="flex items-center justify-center gap-8 py-8 bg-black">
+      <div className="flex items-center justify-center gap-8 pt-8 pb-[calc(env(safe-area-inset-bottom)+32px)] bg-black">
         {photoUrl ? (
           <div className="flex items-center gap-8">
             <button onClick={retake} className="flex flex-col items-center gap-1 text-white">

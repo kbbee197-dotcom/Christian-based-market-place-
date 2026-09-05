@@ -174,31 +174,33 @@ function FeedHeader({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-2 px-3 py-2.5 bg-gradient-to-b from-black/70 to-transparent">
-      <a href="/orders" className="font-body text-xs font-semibold text-parchment shrink-0">
-        Orders
-      </a>
+    <div className="fixed top-3 inset-x-3 z-50">
+      <div className="flex items-center justify-between gap-2 bg-black/50 backdrop-blur-md rounded-full px-3 py-2">
+        <a href="/orders" className="font-body text-xs font-semibold text-parchment shrink-0 px-1">
+          Orders
+        </a>
 
-      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
-              activeTab === tab.key ? "bg-wick text-ink" : "text-parchment/70"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
+                activeTab === tab.key ? "bg-wick text-ink" : "text-parchment/70"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        {isVendor && (
-          <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
-        )}
-        <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
-        <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
+        <div className="flex items-center gap-3 shrink-0 px-1">
+          {isVendor && (
+            <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
+          )}
+          <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
+          <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
+        </div>
       </div>
     </div>
   );

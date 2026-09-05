@@ -26,6 +26,7 @@ export default async function FeedPage() {
     `
     )
     .eq("flagged", false)
+    .eq("visibility", "public")
     .order("created_at", { ascending: false })
     .limit(20);
 

@@ -127,8 +127,7 @@ export default function Feed({ initialPosts = [] }) {
 
   return (
     <>
-      <TopBar />
-      <FeedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <FeedHeader activeTab={activeTab} setActiveTab={setActiveTab} />
       {posts.length === 0 ? (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-ink text-parchment px-6 text-center gap-2">
           <p className="font-display text-xl">
@@ -151,7 +150,7 @@ export default function Feed({ initialPosts = [] }) {
   );
 }
 
-function TopBar() {
+function FeedHeader({ activeTab, setActiveTab }) {
   const [isVendor, setIsVendor] = useState(false);
 
   useEffect(() => {
@@ -168,26 +167,6 @@ function TopBar() {
     checkVendor();
   }, []);
 
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  }
-
-  return (
-    <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-end px-4 py-3 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
-      <div className="flex items-center gap-4 pointer-events-auto">
-        <a href="/orders" aria-label="Orders"><Receipt className="w-5 h-5 text-parchment" /></a>
-        {isVendor && (
-          <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
-        )}
-        <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
-        <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
-      </div>
-    </div>
-  );
-}
-
-function FeedTabs({ activeTab, setActiveTab }) {
   const tabs = [
     { key: "discover", label: "Discover" },
     { key: "following", label: "Following" },
@@ -195,21 +174,31 @@ function FeedTabs({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="fixed top-11 inset-x-0 z-40 flex items-center justify-center gap-2 px-4 pointer-events-none">
-      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 pointer-events-auto">
+    <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-2 px-3 py-2.5 bg-gradient-to-b from-black/70 to-transparent">
+      <a href="/orders" className="font-body text-xs font-semibold text-parchment shrink-0">
+        Orders
+      </a>
+
+      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`font-body text-xs font-semibold px-4 py-1.5 rounded-full transition-all ${
-              activeTab === tab.key
-                ? "bg-wick text-ink"
-                : "text-parchment/70"
+            className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
+              activeTab === tab.key ? "bg-wick text-ink" : "text-parchment/70"
             }`}
           >
             {tab.label}
           </button>
         ))}
+      </div>
+
+      <div className="flex items-center gap-3 shrink-0">
+        {isVendor && (
+          <a href="/dashboard" aria-label="Dashboard"><LayoutDashboard className="w-5 h-5 text-parchment" /></a>
+        )}
+        <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
+        <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
       </div>
     </div>
   );

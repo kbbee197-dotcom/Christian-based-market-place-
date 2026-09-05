@@ -131,10 +131,12 @@ export default function Feed({ initialPosts = [] }) {
       <FeedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       {posts.length === 0 ? (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-ink text-parchment px-6 text-center gap-2">
-          <p className="font-display text-xl">Nothing posted yet</p>
-          <p className="font-body text-slate text-sm max-w-xs">
-            Once a seller uploads a video from the vendor dashboard, it'll
-            show up here.
+          <p className="font-display text-xl">
+            {activeTab === "following"
+              ? "No videos from people you follow yet"
+              : activeTab === "shop"
+              ? "No shoppable videos yet"
+              : "Nothing posted yet"}
           </p>
         </div>
       ) : (
@@ -193,7 +195,7 @@ function FeedTabs({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="fixed top-14 inset-x-0 z-40 flex items-center justify-center gap-2 px-4 pointer-events-none">
+    <div className="fixed top-11 inset-x-0 z-40 flex items-center justify-center gap-2 px-4 pointer-events-none">
       <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 pointer-events-auto">
         {tabs.map((tab) => (
           <button

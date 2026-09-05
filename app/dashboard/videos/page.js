@@ -25,7 +25,7 @@ export default function VideosPage() {
 
     const { data } = await supabase
       .from("videos_posts")
-      .select("id, caption, thumbnail_url, created_at")
+      .select("id, caption, thumbnail_url, created_at, visibility")
       .eq("creator_id", userId)
       .order("created_at", { ascending: false });
 
@@ -36,6 +36,25 @@ export default function VideosPage() {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  async function toggleVisibility(id, currentVisibility) {
+    setMessage("");
+    const nextVisibility = currentVisibility === "public" ? "private" : "public";
+    const headers = await authHeaders();
+    const res = await fetch("/api/videos", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ postId: id, visibility: nextVisibility }),
+    });
+    const json = await res.json();
+
+    if (!res.ok) {
+      setMessage(json.error || "Something went wrong.");
+      return;
+    }
+
+    loadPosts();
+  }
 
   async function deletePost(id) {
     setMessage("");
@@ -89,6 +108,16 @@ export default function VideosPage() {
                 {new Date(p.created_at).toLocaleDateString()}
               </p>
             </div>
+            <button
+              onClick={() => toggleVisibility(p.id, p.visibility)}
+              className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 ${
+                p.visibility === "public"
+                  ? "border-wick text-wick"
+                  : "border-slate/40 text-slate"
+              }`}
+            >
+              {p.visibility === "public" ? "Public" : "Private"}
+            </button>
             <button onClick={() => deletePost(p.id)} aria-label="Delete video">
               <Trash2 className="w-4 h-4 text-clay" />
             </button>

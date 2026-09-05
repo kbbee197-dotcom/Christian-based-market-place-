@@ -48,6 +48,10 @@ function normalize(row) {
 
 export default function Feed({ initialPosts = [] }) {
   const [extraPosts, setExtraPosts] = useState([]);
+  const [soundOn, setSoundOn] = useState(false);
+  const [activeTab, setActiveTab] = useState("discover");
+  const [followingIds, setFollowingIds] = useState([]);
+
   const allPosts = [...initialPosts, ...extraPosts]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map(normalize);
@@ -57,9 +61,6 @@ export default function Feed({ initialPosts = [] }) {
     if (activeTab === "shop") return !!post.product;
     return true;
   });
-  const [soundOn, setSoundOn] = useState(false);
-  const [activeTab, setActiveTab] = useState("discover");
-  const [followingIds, setFollowingIds] = useState([]);
 
   useEffect(() => {
     async function loadFollowingIds() {

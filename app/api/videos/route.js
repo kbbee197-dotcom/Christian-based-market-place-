@@ -41,6 +41,47 @@ export async function POST(req) {
   return NextResponse.json({ post: data });
 }
 
+export async function PATCH(req) {
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) {
+    return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  }
+
+  const { data: userData } = await supabaseAuthed(token).auth.getUser();
+  const userId = userData?.user?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Your session has expired — please log in again." }, { status: 401 });
+  }
+
+  const { postId, visibility } = await req.json();
+  if (!postId || !visibility) {
+    return NextResponse.json({ error: "Missing postId or visibility." }, { status: 400 });
+  }
+  if (!["public", "private"].includes(visibility)) {
+    return NextResponse.json({ error: "Invalid visibility value." }, { status: 400 });
+  }
+
+  const { data: post } = await supabaseAdmin
+    .from("videos_posts")
+    .select("creator_id")
+    .eq("id", postId)
+    .single();
+
+  if (!post || post.creator_id !== userId) {
+    return NextResponse.json({ error: "You can only edit your own posts." }, { status: 403 });
+  }
+
+  const { error } = await supabaseAdmin
+    .from("videos_posts")
+    .update({ visibility })
+    .eq("id", postId);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(req) {
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.replace("Bearer ", "");

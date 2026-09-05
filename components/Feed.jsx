@@ -48,10 +48,33 @@ function normalize(row) {
 
 export default function Feed({ initialPosts = [] }) {
   const [extraPosts, setExtraPosts] = useState([]);
-  const posts = [...initialPosts, ...extraPosts]
+  const allPosts = [...initialPosts, ...extraPosts]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map(normalize);
+
+  const posts = allPosts.filter((post) => {
+    if (activeTab === "following") return followingIds.includes(post.creator.id);
+    if (activeTab === "shop") return !!post.product;
+    return true;
+  });
   const [soundOn, setSoundOn] = useState(false);
+  const [activeTab, setActiveTab] = useState("discover");
+  const [followingIds, setFollowingIds] = useState([]);
+
+  useEffect(() => {
+    async function loadFollowingIds() {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) return;
+
+      const { data } = await supabase
+        .from("follows")
+        .select("creator_id")
+        .eq("follower_id", userData.user.id);
+
+      setFollowingIds((data || []).map((f) => f.creator_id));
+    }
+    loadFollowingIds();
+  }, []);
 
   useEffect(() => {
     async function loadFollowerPosts() {
@@ -104,6 +127,7 @@ export default function Feed({ initialPosts = [] }) {
   return (
     <>
       <TopBar />
+      <FeedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       {posts.length === 0 ? (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-ink text-parchment px-6 text-center gap-2">
           <p className="font-display text-xl">Nothing posted yet</p>
@@ -155,6 +179,34 @@ function TopBar() {
         )}
         <a href="/search" aria-label="Search"><Search className="w-5 h-5 text-parchment" /></a>
         <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
+      </div>
+    </div>
+  );
+}
+
+function FeedTabs({ activeTab, setActiveTab }) {
+  const tabs = [
+    { key: "discover", label: "Discover" },
+    { key: "following", label: "Following" },
+    { key: "shop", label: "Shop" },
+  ];
+
+  return (
+    <div className="fixed top-14 inset-x-0 z-40 flex items-center justify-center gap-2 px-4 pointer-events-none">
+      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 pointer-events-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`font-body text-xs font-semibold px-4 py-1.5 rounded-full transition-all ${
+              activeTab === tab.key
+                ? "bg-wick text-ink"
+                : "text-parchment/70"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
     </div>
   );

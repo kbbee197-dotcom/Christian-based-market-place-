@@ -37,9 +37,11 @@ export default function VideosPage() {
     loadPosts();
   }, []);
 
+  const VISIBILITY_CYCLE = { public: "followers", followers: "private", private: "public" };
+
   async function toggleVisibility(id, currentVisibility) {
     setMessage("");
-    const nextVisibility = currentVisibility === "public" ? "private" : "public";
+    const nextVisibility = VISIBILITY_CYCLE[currentVisibility] || "public";
     const headers = await authHeaders();
     const res = await fetch("/api/videos", {
       method: "PATCH",
@@ -113,10 +115,12 @@ export default function VideosPage() {
               className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 ${
                 p.visibility === "public"
                   ? "border-wick text-wick"
+                  : p.visibility === "followers"
+                  ? "border-clay text-clay"
                   : "border-slate/40 text-slate"
               }`}
             >
-              {p.visibility === "public" ? "Public" : "Private"}
+              {p.visibility === "public" ? "Public" : p.visibility === "followers" ? "Followers" : "Private"}
             </button>
             <button onClick={() => deletePost(p.id)} aria-label="Delete video">
               <Trash2 className="w-4 h-4 text-clay" />

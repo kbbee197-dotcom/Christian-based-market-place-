@@ -58,7 +58,7 @@ export async function PATCH(req) {
   if (!postId || !visibility) {
     return NextResponse.json({ error: "Missing postId or visibility." }, { status: 400 });
   }
-  if (!["public", "private"].includes(visibility)) {
+  if (!["public", "followers", "private"].includes(visibility)) {
     return NextResponse.json({ error: "Invalid visibility value." }, { status: 400 });
   }
 

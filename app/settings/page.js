@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
+import SelfieCamera from "@/components/SelfieCamera";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function SettingsPage() {
   const [savingBio, setSavingBio] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState("");
+  const [showCamera, setShowCamera] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -38,8 +41,7 @@ export default function SettingsPage() {
     load();
   }, [router]);
 
-  async function uploadAvatar(e) {
-    const file = e.target.files?.[0];
+  async function uploadAvatarFile(file) {
     if (!file) return;
     setUploadingAvatar(true);
     setMessage("");
@@ -64,6 +66,16 @@ export default function SettingsPage() {
     } finally {
       setUploadingAvatar(false);
     }
+  }
+
+  function uploadAvatar(e) {
+    const file = e.target.files?.[0];
+    uploadAvatarFile(file);
+  }
+
+  function handleSelfie(file) {
+    setShowCamera(false);
+    uploadAvatarFile(file);
   }
 
   async function saveBio() {
@@ -103,7 +115,7 @@ export default function SettingsPage() {
       <h1 className="font-display text-2xl font-semibold mb-6">Account</h1>
 
       <div className="flex flex-col items-center mb-6">
-        <label className="relative cursor-pointer">
+        <div className="relative">
           {profile?.avatar_url ? (
             <img
               src={profile.avatar_url}
@@ -115,17 +127,44 @@ export default function SettingsPage() {
               {(profile?.display_name || profile?.username || "?")[0]?.toUpperCase()}
             </div>
           )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={uploadAvatar}
-            className="hidden"
-          />
-          <span className="absolute bottom-0 right-0 bg-wick text-ink text-xs font-semibold rounded-full px-2 py-0.5">
+          <button
+            onClick={() => setShowAvatarMenu((v) => !v)}
+            className="absolute bottom-0 right-0 bg-wick text-ink text-xs font-semibold rounded-full px-2 py-0.5"
+          >
             {uploadingAvatar ? "..." : "Edit"}
-          </span>
-        </label>
+          </button>
+        </div>
+
+        {showAvatarMenu && (
+          <div className="mt-3 flex gap-2">
+            <label className="bg-white/10 text-parchment text-xs font-semibold px-4 py-2 rounded-full cursor-pointer">
+              Upload photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  setShowAvatarMenu(false);
+                  uploadAvatar(e);
+                }}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => {
+                setShowAvatarMenu(false);
+                setShowCamera(true);
+              }}
+              className="bg-white/10 text-parchment text-xs font-semibold px-4 py-2 rounded-full"
+            >
+              Take selfie
+            </button>
+          </div>
+        )}
       </div>
+
+      {showCamera && (
+        <SelfieCamera onCapture={handleSelfie} onCancel={() => setShowCamera(false)} />
+      )}
 
       {message && <p className="font-body text-sm text-clay mb-4 text-center">{message}</p>}
 

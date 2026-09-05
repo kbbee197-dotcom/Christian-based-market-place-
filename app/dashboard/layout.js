@@ -53,9 +53,14 @@ export default function DashboardLayout({ children }) {
     <div className="min-h-dvh bg-ink text-parchment">
       <header className="border-b border-white/10 px-5 py-4 flex items-center justify-between">
         <h1 className="font-display text-lg font-semibold">Vendor dashboard</h1>
-        <a href="/feed" className="font-body text-sm text-wick font-semibold">
-          &larr; Feed
-        </a>
+        <div className="flex items-center gap-4">
+          <a href="/settings" className="font-body text-sm text-wick font-semibold">
+            Profile
+          </a>
+          <a href="/feed" className="font-body text-sm text-wick font-semibold">
+            &larr; Feed
+          </a>
+        </div>
       </header>
 
       <nav className="flex overflow-x-auto gap-2 px-5 py-3 border-b border-white/10">

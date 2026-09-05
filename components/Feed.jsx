@@ -47,6 +47,21 @@ function normalize(row) {
 
 export default function Feed({ initialPosts = [] }) {
   const posts = initialPosts.map(normalize);
+  const [soundOn, setSoundOn] = useState(false);
+
+  useEffect(() => {
+    function unmuteOnFirstInteraction() {
+      setSoundOn(true);
+      window.removeEventListener("click", unmuteOnFirstInteraction);
+      window.removeEventListener("touchstart", unmuteOnFirstInteraction);
+    }
+    window.addEventListener("click", unmuteOnFirstInteraction);
+    window.addEventListener("touchstart", unmuteOnFirstInteraction);
+    return () => {
+      window.removeEventListener("click", unmuteOnFirstInteraction);
+      window.removeEventListener("touchstart", unmuteOnFirstInteraction);
+    };
+  }, []);
 
   return (
     <>
@@ -62,7 +77,7 @@ export default function Feed({ initialPosts = [] }) {
       ) : (
         <div className="snap-feed bg-ink">
           {posts.map((post) => (
-            <FeedCard key={post.id} post={post} />
+            <FeedCard key={post.id} post={post} soundOn={soundOn} />
           ))}
         </div>
       )}
@@ -107,7 +122,7 @@ function TopBar() {
   );
 }
 
-function FeedCard({ post }) {
+function FeedCard({ post, soundOn }) {
   const [playing, setPlaying] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -201,7 +216,7 @@ function FeedCard({ post }) {
             className="absolute inset-0 w-full h-full object-cover"
             autoPlay={playing}
             loop
-            muted
+            muted={!soundOn}
             playsInline
           />
         ) : (

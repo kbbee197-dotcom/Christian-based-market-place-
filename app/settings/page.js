@@ -111,7 +111,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-ink text-parchment px-5 py-6">
+    <div className="min-h-dvh bg-ink text-parchment px-5 pt-6 pb-28">
       <h1 className="font-display text-2xl font-semibold mb-6">Account</h1>
 
       <div className="flex flex-col items-center mb-6">

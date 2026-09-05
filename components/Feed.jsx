@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, Play, ShoppingBag, X, Plus, ShoppingCart, Receipt, LayoutDashboard, LogOut, Settings, Search, Bell } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -123,7 +123,9 @@ function TopBar() {
 }
 
 function FeedCard({ post, soundOn }) {
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef(null);
+  const containerRef = useRef(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [following, setFollowing] = useState(false);
@@ -132,6 +134,32 @@ function FeedCard({ post, soundOn }) {
   const [added, setAdded] = useState(false);
   const [authNeeded, setAuthNeeded] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setPlaying(entry.isIntersecting);
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    if (playing) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [playing]);
 
   async function currentUserId() {
     const { data } = await supabase.auth.getUser();
@@ -203,7 +231,7 @@ function FeedCard({ post, soundOn }) {
   }
 
   return (
-    <section className="snap-card relative h-dvh w-full flex items-center justify-center overflow-hidden">
+    <section ref={containerRef} className="snap-card relative h-dvh w-full flex items-center justify-center overflow-hidden">
       <button
         onClick={() => setPlaying((v) => !v)}
         className="absolute inset-0 bg-gradient-to-b from-[#1c2030] via-[#12141C] to-[#0b0c11] flex items-center justify-center"
@@ -211,10 +239,10 @@ function FeedCard({ post, soundOn }) {
       >
         {post.videoUrl ? (
           <video
+            ref={videoRef}
             src={post.videoUrl}
             poster={post.thumbnailUrl || undefined}
             className="absolute inset-0 w-full h-full object-cover"
-            autoPlay={playing}
             loop
             muted={!soundOn}
             playsInline

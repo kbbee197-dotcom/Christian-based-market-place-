@@ -9,6 +9,7 @@ const TABS = [
   { href: "/dashboard/store", label: "Store" },
   { href: "/dashboard/products", label: "Products" },
   { href: "/dashboard/upload", label: "Upload video" },
+  { href: "/dashboard/videos", label: "Your videos" },
 ];
 
 export default function DashboardLayout({ children }) {

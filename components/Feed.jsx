@@ -32,6 +32,7 @@ function normalize(row) {
       id: row.creator?.id,
       name: row.creator?.display_name || row.creator?.username || "Creator",
       avatar: (row.creator?.display_name || row.creator?.username || "?")[0]?.toUpperCase(),
+      avatarUrl: row.creator?.avatar_url || null,
     },
     product: row.product
       ? {
@@ -260,9 +261,17 @@ function FeedCard({ post, soundOn }) {
 
       <div className="absolute left-4 bottom-28 right-24 z-10">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-9 h-9 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm">
-            {post.creator.avatar}
-          </div>
+          {post.creator.avatarUrl ? (
+            <img
+              src={post.creator.avatarUrl}
+              alt={post.creator.name}
+              className="w-9 h-9 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm">
+              {post.creator.avatar}
+            </div>
+          )}
           <span className="font-body font-semibold text-sm">{post.creator.name}</span>
           <button
             onClick={toggleFollow}

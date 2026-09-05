@@ -40,3 +40,37 @@ export async function POST(req) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ post: data });
 }
+
+export async function DELETE(req) {
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) {
+    return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  }
+
+  const { data: userData } = await supabaseAuthed(token).auth.getUser();
+  const userId = userData?.user?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Your session has expired — please log in again." }, { status: 401 });
+  }
+
+  const { postId } = await req.json();
+  if (!postId) {
+    return NextResponse.json({ error: "Missing postId." }, { status: 400 });
+  }
+
+  const { data: post } = await supabaseAdmin
+    .from("videos_posts")
+    .select("creator_id")
+    .eq("id", postId)
+    .single();
+
+  if (!post || post.creator_id !== userId) {
+    return NextResponse.json({ error: "You can only delete your own posts." }, { status: 403 });
+  }
+
+  const { error } = await supabaseAdmin.from("videos_posts").delete().eq("id", postId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json({ success: true });
+}

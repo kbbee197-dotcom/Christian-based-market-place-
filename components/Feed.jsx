@@ -47,8 +47,45 @@ function normalize(row) {
 }
 
 export default function Feed({ initialPosts = [] }) {
-  const posts = initialPosts.map(normalize);
+  const [extraPosts, setExtraPosts] = useState([]);
+  const posts = [...initialPosts, ...extraPosts]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .map(normalize);
   const [soundOn, setSoundOn] = useState(false);
+
+  useEffect(() => {
+    async function loadFollowerPosts() {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) return;
+
+      const { data } = await supabase
+        .from("videos_posts")
+        .select(
+          `
+          id,
+          caption,
+          video_url,
+          thumbnail_url,
+          created_at,
+          creator:profiles!videos_posts_creator_id_fkey (
+            id, username, display_name, avatar_url
+          ),
+          product:products (
+            id, title, price_cents, currency
+          ),
+          likes:likes(count),
+          comments:comments(count)
+        `
+        )
+        .eq("flagged", false)
+        .eq("visibility", "followers")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      setExtraPosts(data || []);
+    }
+    loadFollowerPosts();
+  }, []);
 
   useEffect(() => {
     function unmuteOnFirstInteraction() {

@@ -11,6 +11,10 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
+  const [bio, setBio] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -23,15 +27,53 @@ export default function SettingsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("display_name, username, account_type")
+        .select("display_name, username, account_type, bio, avatar_url")
         .eq("id", userData.user.id)
         .single();
 
       setProfile(profileData);
+      setBio(profileData?.bio || "");
       setLoading(false);
     }
     load();
   }, [router]);
+
+  async function uploadAvatar(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    setMessage("");
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", preset);
+      formData.append("resource_type", "image");
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      if (!res.ok) throw new Error("Upload to Cloudinary failed");
+      const json = await res.json();
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from("profiles").update({ avatar_url: json.secure_url }).eq("id", userData.user.id);
+      setProfile((p) => ({ ...p, avatar_url: json.secure_url }));
+    } catch (err) {
+      setMessage("Couldn't upload photo: " + err.message);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function saveBio() {
+    setSavingBio(true);
+    setMessage("");
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase.from("profiles").update({ bio }).eq("id", userData.user.id);
+    if (error) setMessage("Couldn't save bio: " + error.message);
+    setSavingBio(false);
+  }
 
   async function logout() {
     await supabase.auth.signOut();
@@ -49,6 +91,51 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh bg-ink text-parchment px-5 py-6">
       <h1 className="font-display text-2xl font-semibold mb-6">Account</h1>
+
+      <div className="flex flex-col items-center mb-6">
+        <label className="relative cursor-pointer">
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt="Profile"
+              className="w-20 h-20 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-clay flex items-center justify-center font-display text-2xl font-semibold">
+              {(profile?.display_name || profile?.username || "?")[0]?.toUpperCase()}
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={uploadAvatar}
+            className="hidden"
+          />
+          <span className="absolute bottom-0 right-0 bg-wick text-ink text-xs font-semibold rounded-full px-2 py-0.5">
+            {uploadingAvatar ? "..." : "Edit"}
+          </span>
+        </label>
+      </div>
+
+      {message && <p className="font-body text-sm text-clay mb-4 text-center">{message}</p>}
+
+      <div className="bg-white/5 rounded-xl p-5 mb-4">
+        <p className="font-body text-sm text-slate mb-2">Bio</p>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="Tell people a little about yourself or your business"
+          rows={3}
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 font-body text-sm resize-none"
+        />
+        <button
+          onClick={saveBio}
+          disabled={savingBio}
+          className="mt-2 bg-wick text-ink font-semibold text-sm px-4 py-2 rounded-full disabled:opacity-60"
+        >
+          {savingBio ? "Saving..." : "Save bio"}
+        </button>
+      </div>
 
       <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
         <p className="font-body text-sm text-slate">Username</p>

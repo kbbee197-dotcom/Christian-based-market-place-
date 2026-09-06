@@ -31,7 +31,7 @@ export async function POST(req) {
     return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   }
 
-  const { storeId, title, priceCents, imageUrl } = await req.json();
+  const { storeId, title, priceCents, imageUrls, description, tagline, category, tags } = await req.json();
   if (!storeId || !title || !priceCents) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
@@ -45,7 +45,11 @@ export async function POST(req) {
       store_id: storeId,
       title,
       price_cents: priceCents,
-      image_urls: imageUrl ? [imageUrl] : [],
+      image_urls: imageUrls || [],
+      description: description || null,
+      tagline: tagline || null,
+      category: category || null,
+      tags: tags || [],
     })
     .select()
     .single();
@@ -60,7 +64,7 @@ export async function PATCH(req) {
     return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   }
 
-  const { productId, storeId, title, priceCents, imageUrl } = await req.json();
+  const { productId, storeId, title, priceCents, imageUrls, description, tagline, category, tags } = await req.json();
   if (!productId || !storeId) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
@@ -73,7 +77,11 @@ export async function PATCH(req) {
     .update({
       title,
       price_cents: priceCents,
-      image_urls: imageUrl ? [imageUrl] : [],
+      image_urls: imageUrls || [],
+      description: description || null,
+      tagline: tagline || null,
+      category: category || null,
+      tags: tags || [],
     })
     .eq("id", productId)
     .select()

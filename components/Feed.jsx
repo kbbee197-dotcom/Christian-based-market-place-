@@ -39,6 +39,11 @@ function normalize(row) {
           id: row.product.id,
           name: row.product.title,
           price: (row.product.price_cents / 100).toFixed(2),
+          images: row.product.image_urls || [],
+          description: row.product.description || null,
+          tagline: row.product.tagline || null,
+          category: row.product.category || null,
+          tags: row.product.tags || [],
         }
       : null,
     likeCount: row.likes?.[0]?.count ?? 0,
@@ -95,7 +100,7 @@ export default function Feed({ initialPosts = [] }) {
             id, username, display_name, avatar_url
           ),
           product:products (
-            id, title, price_cents, currency
+            id, title, price_cents, currency, image_urls, description, tagline, category, tags
           ),
           likes:likes(count),
           comments:comments(count)
@@ -452,22 +457,77 @@ function ActionButton({ icon, label, onClick }) {
 }
 
 function ProductDrawer({ post, added, onAdd, onClose }) {
+  const [activeImage, setActiveImage] = useState(0);
+  const images = post.product.images?.length ? post.product.images : null;
+
   return (
     <motion.div
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="fixed inset-x-0 bottom-0 z-30 bg-parchment text-ink rounded-t-3xl px-6 pt-5 pb-8"
+      className="fixed inset-x-0 bottom-0 z-30 bg-parchment text-ink rounded-t-3xl px-6 pt-5 pb-8 max-h-[85dvh] overflow-y-auto"
     >
       <div className="w-10 h-1 bg-ink/15 rounded-full mx-auto mb-5" />
-      <div className="flex items-start justify-between mb-4">
+
+      {images && (
+        <div className="mb-4">
+          <img
+            src={images[activeImage]}
+            alt={post.product.name}
+            className="w-full aspect-square object-cover rounded-2xl mb-2"
+          />
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto">
+              {images.map((url, i) => (
+                <button key={url} onClick={() => setActiveImage(i)}>
+                  <img
+                    src={url}
+                    alt=""
+                    className={`w-14 h-14 rounded-lg object-cover ${
+                      i === activeImage ? "ring-2 ring-ink" : "opacity-60"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-start justify-between mb-1">
         <h3 className="font-display text-xl font-semibold">{post.product.name}</h3>
-        <button onClick={onClose} aria-label="Close" className="p-1">
+        <button onClick={onClose} aria-label="Close" className="p-1 shrink-0">
           <X className="w-5 h-5" />
         </button>
       </div>
-      <p className="font-display text-2xl font-semibold mb-6">${post.product.price}</p>
+
+      {post.product.tagline && (
+        <p className="font-body text-sm text-ink/60 mb-3">{post.product.tagline}</p>
+      )}
+
+      <p className="font-display text-2xl font-semibold mb-4">${post.product.price}</p>
+
+      {post.product.category && (
+        <span className="inline-block bg-ink/5 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+          {post.product.category}
+        </span>
+      )}
+
+      {post.product.description && (
+        <p className="font-body text-sm text-ink/80 mb-4 whitespace-pre-wrap">
+          {post.product.description}
+        </p>
+      )}
+
+      {post.product.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          {post.product.tags.map((tag) => (
+            <span key={tag} className="font-mono text-xs text-ink/50">#{tag}</span>
+          ))}
+        </div>
+      )}
+
       <button onClick={onAdd} className="w-full flex items-center justify-center gap-2 bg-ink text-parchment font-semibold py-3.5 rounded-full">
         {added ? "Added to cart ✓" : (<><Plus className="w-4 h-4" /> Add to cart</>)}
       </button>

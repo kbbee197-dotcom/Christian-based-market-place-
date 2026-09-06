@@ -2,9 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
+
+function Row({ href, label, value }) {
+  return (
+    <a href={href} className="flex items-center justify-between px-5 py-4">
+      <span className="font-body text-sm">{label}</span>
+      <span className="flex items-center gap-2">
+        {value && <span className="font-body text-xs text-slate">{value}</span>}
+        <ChevronRight className="w-4 h-4 text-slate" />
+      </span>
+    </a>
+  );
+}
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -55,35 +67,61 @@ export default function AccountSettingsPage() {
         <h1 className="font-display text-2xl font-semibold">Settings</h1>
       </div>
 
-      <div className="bg-white/5 rounded-xl mb-4 divide-y divide-white/10">
-        <a href="/settings/watch-history" className="block font-body text-sm px-5 py-4">
-          Watch history
-        </a>
-        <a href="/settings/comment-history" className="block font-body text-sm px-5 py-4">
-          Comment history
-        </a>
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Account</p>
+      <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+        <Row href="/settings/account/info" label="Account info" />
+        <Row href="/settings/account/password" label="Change password" />
+        <Row href="/settings/account/blocked" label="Blocked accounts" />
+      </div>
+
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Notifications</p>
+      <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+        <Row href="/settings/account/notifications" label="Notification preferences" />
+      </div>
+
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Activity</p>
+      <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+        <Row href="/settings/watch-history" label="Watch history" />
+        <Row href="/settings/comment-history" label="Comment history" />
+        <Row href="/settings/account/liked" label="Liked videos" />
+      </div>
+
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Content</p>
+      <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+        <Row href="/settings/account/playback" label="Playback" />
       </div>
 
       {profile?.account_type !== "vendor" && (
-        <div className="bg-white/5 rounded-xl p-5 mb-4">
-          <p className="font-body text-sm text-slate mb-3">
-            Want to sell your own products or videos?
-          </p>
-          <a
-            href="/apply-to-sell"
-            className="inline-block bg-wick text-ink font-semibold px-6 py-3 rounded-full"
-          >
-            Apply to sell
-          </a>
-        </div>
+        <>
+          <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Selling</p>
+          <div className="bg-white/5 rounded-xl p-5 mb-6">
+            <p className="font-body text-sm text-slate mb-3">
+              Want to sell your own products or videos?
+            </p>
+            <a
+              href="/apply-to-sell"
+              className="inline-block bg-wick text-ink font-semibold px-6 py-3 rounded-full"
+            >
+              Apply to sell
+            </a>
+          </div>
+        </>
       )}
 
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Support</p>
+      <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+        <Row href="/settings/account/help" label="Help Center" />
+        <Row href="/settings/account/terms" label="Terms and Policies" />
+      </div>
+
+      <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Login</p>
       <button
         onClick={logout}
-        className="w-full bg-white/5 text-clay font-semibold py-3 rounded-full mt-2"
+        className="w-full bg-white/5 text-clay font-semibold py-3 rounded-full mt-1"
       >
         Log out
       </button>
+
       <BottomNav />
     </div>
   );

@@ -201,6 +201,15 @@ export default function SettingsPage() {
         <p className="font-body font-semibold capitalize">{profile?.account_type}</p>
       </div>
 
+      <div className="bg-white/5 rounded-xl mb-4 divide-y divide-white/10">
+        <a href="/settings/watch-history" className="block font-body text-sm px-5 py-4">
+          Watch history
+        </a>
+        <a href="/settings/comment-history" className="block font-body text-sm px-5 py-4">
+          Comment history
+        </a>
+      </div>
+
       {profile?.account_type !== "vendor" && (
         <div className="bg-white/5 rounded-xl p-5 mb-4">
           <p className="font-body text-sm text-slate mb-3">

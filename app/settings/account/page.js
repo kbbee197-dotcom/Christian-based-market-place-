@@ -55,21 +55,6 @@ export default function AccountSettingsPage() {
         <h1 className="font-display text-2xl font-semibold">Settings</h1>
       </div>
 
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Username</p>
-        <p className="font-body font-semibold">{profile?.username || profile?.display_name}</p>
-      </div>
-
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Email</p>
-        <p className="font-body font-semibold">{email}</p>
-      </div>
-
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Account type</p>
-        <p className="font-body font-semibold capitalize">{profile?.account_type}</p>
-      </div>
-
       <div className="bg-white/5 rounded-xl mb-4 divide-y divide-white/10">
         <a href="/settings/watch-history" className="block font-body text-sm px-5 py-4">
           Watch history

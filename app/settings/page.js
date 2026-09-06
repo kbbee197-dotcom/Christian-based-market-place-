@@ -10,6 +10,7 @@ import SelfieCamera from "@/components/SelfieCamera";
 export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState("");
   const [savingBio, setSavingBio] = useState(false);
@@ -25,6 +26,7 @@ export default function ProfilePage() {
         router.replace("/login");
         return;
       }
+      setEmail(userData.user.email);
 
       const { data: profileData } = await supabase
         .from("profiles")
@@ -182,6 +184,21 @@ export default function ProfilePage() {
         >
           {savingBio ? "Saving..." : "Save bio"}
         </button>
+      </div>
+
+      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
+        <p className="font-body text-sm text-slate">Username</p>
+        <p className="font-body font-semibold">{profile?.username || profile?.display_name}</p>
+      </div>
+
+      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
+        <p className="font-body text-sm text-slate">Email</p>
+        <p className="font-body font-semibold">{email}</p>
+      </div>
+
+      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
+        <p className="font-body text-sm text-slate">Account type</p>
+        <p className="font-body font-semibold capitalize">{profile?.account_type}</p>
       </div>
 
       <BottomNav />

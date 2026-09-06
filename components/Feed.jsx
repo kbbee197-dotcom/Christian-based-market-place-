@@ -223,16 +223,30 @@ function FeedCard({ post, soundOn }) {
     const el = containerRef.current;
     if (!el) return;
 
+    let watchTimer = null;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         setPlaying(entry.isIntersecting);
+
+        if (entry.isIntersecting) {
+          watchTimer = setTimeout(() => {
+            logWatch(post.id);
+          }, 3000);
+        } else if (watchTimer) {
+          clearTimeout(watchTimer);
+          watchTimer = null;
+        }
       },
       { threshold: 0.6 }
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      if (watchTimer) clearTimeout(watchTimer);
+    };
+  }, [post.id]);
 
   useEffect(() => {
     const vid = videoRef.current;
@@ -248,6 +262,17 @@ function FeedCard({ post, soundOn }) {
   async function currentUserId() {
     const { data } = await supabase.auth.getUser();
     return data?.user?.id ?? null;
+  }
+
+  async function logWatch(postId) {
+    const userId = await currentUserId();
+    if (!userId) return;
+    await supabase
+      .from("watch_history")
+      .upsert(
+        { user_id: userId, post_id: postId, watched_at: new Date().toISOString() },
+        { onConflict: "user_id,post_id" }
+      );
   }
 
   async function toggleLike() {

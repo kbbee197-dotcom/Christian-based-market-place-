@@ -69,7 +69,6 @@ export default function AccountSettingsPage() {
 
       <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Account</p>
       <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
-        <Row href="/settings/account/info" label="Account info" />
         <Row href="/settings/account/password" label="Change password" />
         <Row href="/settings/account/blocked" label="Blocked accounts" />
       </div>

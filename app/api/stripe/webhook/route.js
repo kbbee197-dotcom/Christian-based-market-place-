@@ -57,12 +57,20 @@ export async function POST(req) {
           .single();
 
         if (store?.owner_id) {
-          await supabaseAdmin.from("notifications").insert({
-            recipient_id: store.owner_id,
-            actor_id: order.buyer_id,
-            type: "order",
-            order_id: order.id,
-          });
+          const { data: ownerProfile } = await supabaseAdmin
+            .from("profiles")
+            .select("notify_orders")
+            .eq("id", store.owner_id)
+            .single();
+
+          if (!ownerProfile || ownerProfile.notify_orders !== false) {
+            await supabaseAdmin.from("notifications").insert({
+              recipient_id: store.owner_id,
+              actor_id: order.buyer_id,
+              type: "order",
+              order_id: order.id,
+            });
+          }
         }
       }
     }

@@ -15,8 +15,27 @@ async function verifyUser(req) {
   return data?.user?.id || null;
 }
 
+const PREFERENCE_COLUMN = {
+  like: "notify_likes",
+  follow: "notify_follows",
+  comment: "notify_comments",
+  order: "notify_orders",
+};
+
 async function notify({ recipientId, actorId, type, postId = null, orderId = null }) {
   if (!recipientId || recipientId === actorId) return;
+
+  const prefColumn = PREFERENCE_COLUMN[type];
+  if (prefColumn) {
+    const { data: recipientProfile } = await supabaseAdmin
+      .from("profiles")
+      .select(prefColumn)
+      .eq("id", recipientId)
+      .single();
+
+    if (recipientProfile && recipientProfile[prefColumn] === false) return;
+  }
+
   await supabaseAdmin.from("notifications").insert({
     recipient_id: recipientId,
     actor_id: actorId,

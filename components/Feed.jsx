@@ -112,6 +112,20 @@ export default function Feed({ initialPosts = [] }) {
   }, []);
 
   useEffect(() => {
+    async function checkDefaultSound() {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("default_sound_on")
+        .eq("id", userData.user.id)
+        .single();
+      if (data?.default_sound_on) setSoundOn(true);
+    }
+    checkDefaultSound();
+  }, []);
+
+  useEffect(() => {
     function unmuteOnFirstInteraction() {
       setSoundOn(true);
       window.removeEventListener("click", unmuteOnFirstInteraction);

@@ -2,12 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, X } from "lucide-react";
+
+const CATEGORIES = ["Apparel", "Home Goods", "Accessories", "Books", "Art", "Other"];
 
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();
   const token = data?.session?.access_token;
   return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+}
+
+async function uploadImageToCloudinary(file) {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", preset);
+  formData.append("resource_type", "image");
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    { method: "POST", body: formData }
+  );
+  if (!res.ok) throw new Error("Image upload failed");
+  const json = await res.json();
+  return json.secure_url;
 }
 
 export default function ProductsPage() {
@@ -16,7 +34,12 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState(null);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [category, setCategory] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [imageUrls, setImageUrls] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -47,14 +70,45 @@ export default function ProductsPage() {
     setEditingId(p.id);
     setTitle(p.title);
     setPrice((p.price_cents / 100).toString());
-    setImageUrl(p.image_urls?.[0] || "");
+    setDescription(p.description || "");
+    setTagline(p.tagline || "");
+    setCategory(p.category || "");
+    setTagsInput((p.tags || []).join(", "));
+    setImageUrls(p.image_urls || []);
   }
 
   function resetForm() {
     setEditingId(null);
     setTitle("");
     setPrice("");
-    setImageUrl("");
+    setDescription("");
+    setTagline("");
+    setCategory("");
+    setTagsInput("");
+    setImageUrls([]);
+  }
+
+  async function handleImageSelect(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    setMessage("");
+    try {
+      const uploaded = [];
+      for (const file of files.slice(0, 5 - imageUrls.length)) {
+        const url = await uploadImageToCloudinary(file);
+        uploaded.push(url);
+      }
+      setImageUrls((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      setMessage("Couldn't upload image: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(url) {
+    setImageUrls((prev) => prev.filter((u) => u !== url));
   }
 
   async function saveProduct(e) {
@@ -69,17 +123,32 @@ export default function ProductsPage() {
     try {
       const headers = await authHeaders();
       const priceCents = Math.round(parseFloat(price) * 100);
+      const tags = tagsInput
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const payload = {
+        storeId,
+        title,
+        priceCents,
+        imageUrls,
+        description,
+        tagline,
+        category,
+        tags,
+      };
 
       const res = editingId
         ? await fetch("/api/products", {
             method: "PATCH",
             headers,
-            body: JSON.stringify({ productId: editingId, storeId, title, priceCents, imageUrl }),
+            body: JSON.stringify({ productId: editingId, ...payload }),
           })
         : await fetch("/api/products", {
             method: "POST",
             headers,
-            body: JSON.stringify({ storeId, title, priceCents, imageUrl }),
+            body: JSON.stringify(payload),
           });
 
       const json = await res.json();
@@ -121,6 +190,17 @@ export default function ProductsPage() {
             placeholder="Beeswax Trio Set"
           />
         </div>
+
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Tagline</label>
+          <input
+            value={tagline}
+            onChange={(e) => setTagline(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="A quick one-liner for the feed"
+          />
+        </div>
+
         <div>
           <label className="block font-body text-sm text-slate mb-1">Price (USD)</label>
           <input
@@ -134,15 +214,73 @@ export default function ProductsPage() {
             placeholder="24.00"
           />
         </div>
+
         <div>
-          <label className="block font-body text-sm text-slate mb-1">Image URL (optional for now)</label>
-          <input
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
-            placeholder="https://..."
+          <label className="block font-body text-sm text-slate mb-1">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body resize-none"
+            placeholder="Materials, sizing, details shoppers should know"
           />
         </div>
+
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+          >
+            <option value="">No category</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Tags (comma separated)</label>
+          <input
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="handmade, faith, gift"
+          />
+        </div>
+
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Photos (up to 5)</label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {imageUrls.map((url) => (
+              <div key={url} className="relative">
+                <img src={url} alt="" className="w-16 h-16 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(url)}
+                  className="absolute -top-1.5 -right-1.5 bg-clay rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3 text-ink" />
+                </button>
+              </div>
+            ))}
+          </div>
+          {imageUrls.length < 5 && (
+            <label className="inline-block bg-white/10 text-parchment text-xs font-semibold px-4 py-2 rounded-full cursor-pointer">
+              {uploading ? "Uploading..." : "Add photos"}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageSelect}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
         {message && <p className="font-body text-sm text-clay">{message}</p>}
         <div className="flex gap-3">
           <button disabled={saving} className="bg-wick text-ink font-semibold px-6 py-3 rounded-full disabled:opacity-60">
@@ -159,11 +297,16 @@ export default function ProductsPage() {
       <div className="space-y-3">
         {products.map((p) => (
           <div key={p.id} className="flex items-center justify-between bg-white/5 rounded-xl p-4">
-            <div>
-              <p className="font-body font-semibold text-sm">{p.title}</p>
-              <p className="font-mono text-xs text-slate">${(p.price_cents / 100).toFixed(2)}</p>
+            <div className="flex items-center gap-3 min-w-0">
+              {p.image_urls?.[0] && (
+                <img src={p.image_urls[0]} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p className="font-body font-semibold text-sm truncate">{p.title}</p>
+                <p className="font-mono text-xs text-slate">${(p.price_cents / 100).toFixed(2)}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <button onClick={() => startEdit(p)} aria-label="Edit product">
                 <Pencil className="w-4 h-4 text-slate" />
               </button>

@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Settings as SettingsIcon } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import BottomNav from "@/components/BottomNav";
 import SelfieCamera from "@/components/SelfieCamera";
 
-export default function SettingsPage() {
+export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState(null);
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const [switching, setSwitching] = useState(false);
   const [bio, setBio] = useState("");
   const [savingBio, setSavingBio] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -26,7 +25,6 @@ export default function SettingsPage() {
         router.replace("/login");
         return;
       }
-      setEmail(userData.user.email);
 
       const { data: profileData } = await supabase
         .from("profiles")
@@ -97,11 +95,6 @@ export default function SettingsPage() {
     setSavingBio(false);
   }
 
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  }
-
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-ink text-slate font-body">
@@ -112,7 +105,12 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-dvh bg-ink text-parchment px-5 pt-6 pb-28">
-      <h1 className="font-display text-2xl font-semibold mb-6">Account</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl font-semibold">Profile</h1>
+        <a href="/settings/account" aria-label="Settings">
+          <SettingsIcon className="w-5 h-5 text-slate" />
+        </a>
+      </div>
 
       <div className="flex flex-col items-center mb-6">
         <div className="relative">
@@ -186,50 +184,6 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Username</p>
-        <p className="font-body font-semibold">{profile?.username || profile?.display_name}</p>
-      </div>
-
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Email</p>
-        <p className="font-body font-semibold">{email}</p>
-      </div>
-
-      <div className="bg-white/5 rounded-xl p-5 mb-4 space-y-1">
-        <p className="font-body text-sm text-slate">Account type</p>
-        <p className="font-body font-semibold capitalize">{profile?.account_type}</p>
-      </div>
-
-      <div className="bg-white/5 rounded-xl mb-4 divide-y divide-white/10">
-        <a href="/settings/watch-history" className="block font-body text-sm px-5 py-4">
-          Watch history
-        </a>
-        <a href="/settings/comment-history" className="block font-body text-sm px-5 py-4">
-          Comment history
-        </a>
-      </div>
-
-      {profile?.account_type !== "vendor" && (
-        <div className="bg-white/5 rounded-xl p-5 mb-4">
-          <p className="font-body text-sm text-slate mb-3">
-            Want to sell your own products or videos?
-          </p>
-          <a
-            href="/apply-to-sell"
-            className="inline-block bg-wick text-ink font-semibold px-6 py-3 rounded-full"
-          >
-            Apply to sell
-          </a>
-        </div>
-      )}
-
-      <button
-        onClick={logout}
-        className="w-full bg-white/5 text-clay font-semibold py-3 rounded-full mt-2"
-      >
-        Log out
-      </button>
       <BottomNav />
     </div>
   );

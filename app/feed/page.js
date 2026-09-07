@@ -19,7 +19,7 @@ export default async function FeedPage() {
         id, username, display_name, avatar_url
       ),
       product:products (
-        id, title, price_cents, currency, image_urls, description, tagline, category, tags
+        id, title, price_cents, currency, image_urls, description, tagline, category, tags, inventory_count
       ),
       likes:likes(count),
       comments:comments(count)

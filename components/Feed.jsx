@@ -44,6 +44,7 @@ function normalize(row) {
           tagline: row.product.tagline || null,
           category: row.product.category || null,
           tags: row.product.tags || [],
+          inventory: row.product.inventory_count,
         }
       : null,
     likeCount: row.likes?.[0]?.count ?? 0,
@@ -100,7 +101,7 @@ export default function Feed({ initialPosts = [] }) {
             id, username, display_name, avatar_url
           ),
           product:products (
-            id, title, price_cents, currency, image_urls, description, tagline, category, tags
+            id, title, price_cents, currency, image_urls, description, tagline, category, tags, inventory_count
           ),
           likes:likes(count),
           comments:comments(count)
@@ -428,7 +429,11 @@ function FeedCard({ post, soundOn }) {
             <p className="flex-1 min-w-0 font-body text-xs font-semibold truncate">
               {post.product.name} · <span className="text-slate font-mono">${post.product.price}</span>
             </p>
-            <span className="font-body text-[11px] font-semibold text-ink bg-wick px-3 py-1 rounded-full shrink-0">View</span>
+            {post.product.inventory === 0 ? (
+              <span className="font-body text-[11px] font-semibold text-slate bg-white/10 px-3 py-1 rounded-full shrink-0">Sold out</span>
+            ) : (
+              <span className="font-body text-[11px] font-semibold text-ink bg-wick px-3 py-1 rounded-full shrink-0">View</span>
+            )}
           </button>
         </div>
       )}
@@ -525,8 +530,16 @@ function ProductDrawer({ post, added, onAdd, onClose }) {
         </div>
       )}
 
-      <button onClick={onAdd} className="w-full flex items-center justify-center gap-2 bg-ink text-parchment font-semibold py-3.5 rounded-full">
-        {added ? "Added to cart ✓" : (<><Plus className="w-4 h-4" /> Add to cart</>)}
+      <button
+        onClick={onAdd}
+        disabled={post.product.inventory === 0}
+        className="w-full flex items-center justify-center gap-2 bg-ink text-parchment font-semibold py-3.5 rounded-full disabled:opacity-40"
+      >
+        {post.product.inventory === 0
+          ? "Sold out"
+          : added
+          ? "Added to cart ✓"
+          : (<><Plus className="w-4 h-4" /> Add to cart</>)}
       </button>
     </motion.div>
   );

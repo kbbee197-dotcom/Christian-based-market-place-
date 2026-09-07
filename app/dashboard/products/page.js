@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Trash2, Pencil, X } from "lucide-react";
+import { Trash2, Pencil, X, Plus } from "lucide-react";
 
 const CATEGORIES = ["Apparel", "Home Goods", "Accessories", "Books", "Art", "Other"];
 
@@ -43,6 +43,11 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [variants, setVariants] = useState([]);
+  const [newVariantName, setNewVariantName] = useState("");
+  const [newVariantValue, setNewVariantValue] = useState("");
+  const [newVariantStock, setNewVariantStock] = useState("");
+  const [variantSaving, setVariantSaving] = useState(false);
 
   async function loadProducts(sid) {
     const { data } = await supabase
@@ -51,6 +56,15 @@ export default function ProductsPage() {
       .eq("store_id", sid)
       .order("created_at", { ascending: false });
     setProducts(data || []);
+  }
+
+  async function loadVariants(productId) {
+    const { data } = await supabase
+      .from("product_variants")
+      .select("*")
+      .eq("product_id", productId)
+      .order("created_at", { ascending: true });
+    setVariants(data || []);
   }
 
   useEffect(() => {
@@ -77,6 +91,7 @@ export default function ProductsPage() {
     setTagsInput((p.tags || []).join(", "));
     setImageUrls(p.image_urls || []);
     setInventory(p.inventory_count != null ? String(p.inventory_count) : "");
+    loadVariants(p.id);
   }
 
   function resetForm() {
@@ -89,6 +104,10 @@ export default function ProductsPage() {
     setTagsInput("");
     setImageUrls([]);
     setInventory("");
+    setVariants([]);
+    setNewVariantName("");
+    setNewVariantValue("");
+    setNewVariantStock("");
   }
 
   async function handleImageSelect(e) {
@@ -112,6 +131,48 @@ export default function ProductsPage() {
 
   function removeImage(url) {
     setImageUrls((prev) => prev.filter((u) => u !== url));
+  }
+
+  async function addVariant() {
+    if (!editingId || !newVariantName.trim() || !newVariantValue.trim()) return;
+    setVariantSaving(true);
+    setMessage("");
+    try {
+      const headers = await authHeaders();
+      const res = await fetch("/api/variants", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          productId: editingId,
+          optionName: newVariantName.trim(),
+          optionValue: newVariantValue.trim(),
+          inventoryCount: newVariantStock === "" ? null : parseInt(newVariantStock, 10),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setMessage(json.error || "Couldn't add variant.");
+      } else {
+        setNewVariantName("");
+        setNewVariantValue("");
+        setNewVariantStock("");
+        loadVariants(editingId);
+      }
+    } catch (err) {
+      setMessage("Error: " + err.message);
+    } finally {
+      setVariantSaving(false);
+    }
+  }
+
+  async function removeVariant(variantId) {
+    const headers = await authHeaders();
+    await fetch("/api/variants", {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({ variantId, productId: editingId }),
+    });
+    loadVariants(editingId);
   }
 
   async function saveProduct(e) {
@@ -318,6 +379,61 @@ export default function ProductsPage() {
             </label>
           )}
         </div>
+
+        {editingId ? (
+          <div>
+            <label className="block font-body text-sm text-slate mb-1">Variants (e.g. Size, Color)</label>
+            <div className="space-y-2 mb-3">
+              {variants.map((v) => (
+                <div key={v.id} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
+                  <span className="font-body text-sm">
+                    {v.option_name}: {v.option_value}
+                    {v.inventory_count != null && (
+                      <span className="text-slate text-xs"> · {v.inventory_count} in stock</span>
+                    )}
+                  </span>
+                  <button type="button" onClick={() => removeVariant(v.id)} aria-label="Remove variant">
+                    <X className="w-4 h-4 text-clay" />
+                  </button>
+                </div>
+              ))}
+              {variants.length === 0 && <p className="font-body text-xs text-slate">No variants yet.</p>}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newVariantName}
+                onChange={(e) => setNewVariantName(e.target.value)}
+                placeholder="Option (Size)"
+                className="w-1/3 bg-white/5 border border-white/10 rounded-lg px-3 py-2 font-body text-sm"
+              />
+              <input
+                value={newVariantValue}
+                onChange={(e) => setNewVariantValue(e.target.value)}
+                placeholder="Value (Small)"
+                className="w-1/3 bg-white/5 border border-white/10 rounded-lg px-3 py-2 font-body text-sm"
+              />
+              <input
+                type="number"
+                min="0"
+                value={newVariantStock}
+                onChange={(e) => setNewVariantStock(e.target.value)}
+                placeholder="Stock"
+                className="w-1/4 bg-white/5 border border-white/10 rounded-lg px-3 py-2 font-body text-sm"
+              />
+              <button
+                type="button"
+                onClick={addVariant}
+                disabled={variantSaving}
+                className="bg-white/10 rounded-lg px-3 py-2 disabled:opacity-60"
+                aria-label="Add variant"
+              >
+                <Plus className="w-4 h-4 text-parchment" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="font-body text-xs text-slate">Save the product first, then you can add variants like size or color.</p>
+        )}
 
         {message && <p className="font-body text-sm text-clay">{message}</p>}
         <div className="flex gap-3">

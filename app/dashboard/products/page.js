@@ -39,6 +39,7 @@ export default function ProductsPage() {
   const [category, setCategory] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
+  const [inventory, setInventory] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -75,6 +76,7 @@ export default function ProductsPage() {
     setCategory(p.category || "");
     setTagsInput((p.tags || []).join(", "));
     setImageUrls(p.image_urls || []);
+    setInventory(p.inventory_count != null ? String(p.inventory_count) : "");
   }
 
   function resetForm() {
@@ -86,6 +88,7 @@ export default function ProductsPage() {
     setCategory("");
     setTagsInput("");
     setImageUrls([]);
+    setInventory("");
   }
 
   async function handleImageSelect(e) {
@@ -137,6 +140,7 @@ export default function ProductsPage() {
         tagline,
         category,
         tags,
+        inventoryCount: inventory === "" ? null : parseInt(inventory, 10),
       };
 
       const res = editingId
@@ -241,6 +245,18 @@ export default function ProductsPage() {
         </div>
 
         <div>
+          <label className="block font-body text-sm text-slate mb-1">Stock quantity (leave blank for unlimited)</label>
+          <input
+            type="number"
+            min="0"
+            value={inventory}
+            onChange={(e) => setInventory(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="Unlimited"
+          />
+        </div>
+
+        <div>
           <label className="block font-body text-sm text-slate mb-1">Tags (comma separated)</label>
           <input
             value={tagsInput}
@@ -303,7 +319,15 @@ export default function ProductsPage() {
               )}
               <div className="min-w-0">
                 <p className="font-body font-semibold text-sm truncate">{p.title}</p>
-                <p className="font-mono text-xs text-slate">${(p.price_cents / 100).toFixed(2)}</p>
+                <p className="font-mono text-xs text-slate">
+                  ${(p.price_cents / 100).toFixed(2)}
+                  {p.inventory_count != null && (
+                    <span className={p.inventory_count === 0 ? "text-clay" : ""}>
+                      {" · "}
+                      {p.inventory_count === 0 ? "Sold out" : `${p.inventory_count} in stock`}
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">

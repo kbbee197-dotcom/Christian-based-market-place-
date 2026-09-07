@@ -419,7 +419,7 @@ function FeedCard({ post, soundOn }) {
       </div>
 
       {post.product && (
-        <div className="absolute left-0 right-0 bottom-0 z-10 px-4 pb-6">
+        <div className="absolute left-0 right-0 bottom-0 z-10 px-4 pb-[calc(env(safe-area-inset-bottom)+88px)]">
           <button
             onClick={() => setCartOpen(true)}
             className="w-full flex items-center gap-3 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 text-left"

@@ -38,7 +38,7 @@ export async function POST(req) {
       if (order) {
         const { data: items } = await supabaseAdmin
           .from("order_items")
-          .select("product_id")
+          .select("product_id, quantity")
           .eq("order_id", orderId);
 
         const productIds = (items || []).map((i) => i.product_id);
@@ -48,6 +48,22 @@ export async function POST(req) {
             .delete()
             .eq("user_id", order.buyer_id)
             .in("product_id", productIds);
+        }
+
+        for (const item of items || []) {
+          const { data: product } = await supabaseAdmin
+            .from("products")
+            .select("inventory_count")
+            .eq("id", item.product_id)
+            .single();
+
+          if (product && product.inventory_count != null) {
+            const newCount = Math.max(0, product.inventory_count - item.quantity);
+            await supabaseAdmin
+              .from("products")
+              .update({ inventory_count: newCount })
+              .eq("id", item.product_id);
+          }
         }
 
         const { data: store } = await supabaseAdmin

@@ -25,7 +25,7 @@ export async function POST(req) {
 
   const { data: cartItems, error: cartError } = await supabase
     .from("cart_items")
-    .select("id, quantity, product:products(id, title, price_cents, store_id)")
+    .select("id, quantity, product:products(id, title, price_cents, store_id, inventory_count)")
     .eq("user_id", userId);
 
   if (cartError) {
@@ -37,6 +37,21 @@ export async function POST(req) {
 
   const firstStoreId = cartItems[0].product.store_id;
   const groupItems = cartItems.filter((item) => item.product.store_id === firstStoreId);
+
+  for (const item of groupItems) {
+    const stock = item.product.inventory_count;
+    if (stock != null && item.quantity > stock) {
+      return NextResponse.json(
+        {
+          error:
+            stock === 0
+              ? `${item.product.title} is sold out.`
+              : `Only ${stock} left of ${item.product.title}.`,
+        },
+        { status: 400 }
+      );
+    }
+  }
 
   const { data: store } = await supabase
     .from("sellers_stores")

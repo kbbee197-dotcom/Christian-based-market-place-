@@ -386,7 +386,7 @@ function FeedCard({ post, soundOn }) {
 
       <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-wick to-transparent opacity-70 pointer-events-none" />
 
-      <div className={`absolute left-4 right-24 z-10 ${post.product ? "bottom-44" : "bottom-28"}`}>
+      <div className={`absolute left-4 right-24 z-10 ${post.product ? "bottom-36" : "bottom-28"}`}>
         <div className="flex items-center gap-2 mb-3">
           {post.creator.avatarUrl ? (
             <img
@@ -412,26 +412,23 @@ function FeedCard({ post, soundOn }) {
         <p className="font-body text-sm text-parchment/90 max-w-xs">{post.caption}</p>
       </div>
 
-      <div className={`absolute right-3 z-10 flex flex-col items-center gap-5 ${post.product ? "bottom-44" : "bottom-28"}`}>
+      <div className={`absolute right-3 z-10 flex flex-col items-center gap-5 ${post.product ? "bottom-36" : "bottom-28"}`}>
         <ActionButton icon={<Heart className={liked ? "fill-clay text-clay" : ""} />} label={likeCount} onClick={toggleLike} />
         <ActionButton icon={<MessageCircle />} label={post.commentCount} onClick={() => setCommentsOpen(true)} />
         <ActionButton icon={<Share2 />} label={copied ? "Copied!" : "Share"} onClick={handleShare} />
       </div>
 
       {post.product && (
-        <div className="absolute left-0 right-0 bottom-0 z-10 px-4 pb-[calc(env(safe-area-inset-bottom)+88px)]">
+        <div className="absolute left-4 right-4 z-10 bottom-[calc(env(safe-area-inset-bottom)+88px)]">
           <button
             onClick={() => setCartOpen(true)}
-            className="w-full flex items-center gap-3 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 text-left"
+            className="w-full flex items-center gap-2 bg-black/50 backdrop-blur-md rounded-full pl-3 pr-1.5 py-1.5 text-left"
           >
-            <div className="w-11 h-11 rounded-lg bg-parchment/10 flex items-center justify-center shrink-0">
-              <ShoppingBag className="w-5 h-5 text-wick" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-body text-sm font-semibold truncate">{post.product.name}</p>
-              <p className="font-mono text-xs text-slate">${post.product.price}</p>
-            </div>
-            <span className="font-body text-xs font-semibold text-ink bg-wick px-3 py-1.5 rounded-full shrink-0">View</span>
+            <ShoppingBag className="w-4 h-4 text-wick shrink-0" />
+            <p className="flex-1 min-w-0 font-body text-xs font-semibold truncate">
+              {post.product.name} · <span className="text-slate font-mono">${post.product.price}</span>
+            </p>
+            <span className="font-body text-[11px] font-semibold text-ink bg-wick px-3 py-1 rounded-full shrink-0">View</span>
           </button>
         </div>
       )}

@@ -65,7 +65,7 @@ export async function PATCH(req) {
     return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   }
 
-  const { productId, storeId, title, priceCents, imageUrls, description, tagline, category, tags, inventoryCount } = await req.json();
+  const { productId, storeId, title, priceCents, imageUrls, description, tagline, category, tags, inventoryCount, isActive } = await req.json();
   if (!productId || !storeId) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
@@ -84,6 +84,7 @@ export async function PATCH(req) {
       category: category || null,
       tags: tags || [],
       inventory_count: inventoryCount,
+      is_active: isActive === undefined ? true : isActive,
     })
     .eq("id", productId)
     .select()

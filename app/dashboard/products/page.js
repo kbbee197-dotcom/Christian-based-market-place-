@@ -170,6 +170,28 @@ export default function ProductsPage() {
     }
   }
 
+  async function toggleActive(p) {
+    const headers = await authHeaders();
+    await fetch("/api/products", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({
+        productId: p.id,
+        storeId,
+        title: p.title,
+        priceCents: p.price_cents,
+        imageUrls: p.image_urls,
+        description: p.description,
+        tagline: p.tagline,
+        category: p.category,
+        tags: p.tags,
+        inventoryCount: p.inventory_count,
+        isActive: !p.is_active,
+      }),
+    });
+    loadProducts(storeId);
+  }
+
   async function deleteProduct(id) {
     const headers = await authHeaders();
     await fetch("/api/products", {
@@ -328,6 +350,18 @@ export default function ProductsPage() {
                     </span>
                   )}
                 </p>
+                <button
+                  onClick={() => toggleActive(p)}
+                  className={`inline-block mt-1 font-body text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    p.inventory_count === 0
+                      ? "bg-white/10 text-slate"
+                      : p.is_active
+                      ? "bg-wick/20 text-wick"
+                      : "bg-white/10 text-slate"
+                  }`}
+                >
+                  {p.inventory_count === 0 ? "Sold out" : p.is_active ? "Active" : "Draft"}
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">

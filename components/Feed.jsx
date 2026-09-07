@@ -34,7 +34,7 @@ function normalize(row) {
       avatar: (row.creator?.display_name || row.creator?.username || "?")[0]?.toUpperCase(),
       avatarUrl: row.creator?.avatar_url || null,
     },
-    product: row.product
+    product: row.product && row.product.is_active !== false
       ? {
           id: row.product.id,
           name: row.product.title,
@@ -101,7 +101,7 @@ export default function Feed({ initialPosts = [] }) {
             id, username, display_name, avatar_url
           ),
           product:products (
-            id, title, price_cents, currency, image_urls, description, tagline, category, tags, inventory_count
+            id, title, price_cents, currency, image_urls, description, tagline, category, tags, inventory_count, is_active
           ),
           likes:likes(count),
           comments:comments(count)

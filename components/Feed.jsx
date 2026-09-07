@@ -386,7 +386,7 @@ function FeedCard({ post, soundOn }) {
 
       <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-wick to-transparent opacity-70 pointer-events-none" />
 
-      <div className="absolute left-4 bottom-28 right-24 z-10">
+      <div className={`absolute left-4 right-24 z-10 ${post.product ? "bottom-44" : "bottom-28"}`}>
         <div className="flex items-center gap-2 mb-3">
           {post.creator.avatarUrl ? (
             <img
@@ -412,7 +412,7 @@ function FeedCard({ post, soundOn }) {
         <p className="font-body text-sm text-parchment/90 max-w-xs">{post.caption}</p>
       </div>
 
-      <div className="absolute right-3 bottom-28 z-10 flex flex-col items-center gap-5">
+      <div className={`absolute right-3 z-10 flex flex-col items-center gap-5 ${post.product ? "bottom-44" : "bottom-28"}`}>
         <ActionButton icon={<Heart className={liked ? "fill-clay text-clay" : ""} />} label={likeCount} onClick={toggleLike} />
         <ActionButton icon={<MessageCircle />} label={post.commentCount} onClick={() => setCommentsOpen(true)} />
         <ActionButton icon={<Share2 />} label={copied ? "Copied!" : "Share"} onClick={handleShare} />

@@ -36,9 +36,24 @@ export async function POST(req) {
     return NextResponse.json({ error: "Your session has expired — please log in again." }, { status: 401 });
   }
 
-  const { storeName, description } = await req.json();
+  const {
+    storeName,
+    description,
+    sellsCategory,
+    fulfillmentMethod,
+    contactEmail,
+    contactPhone,
+    portfolioUrl,
+    faithStatement,
+  } = await req.json();
   if (!storeName) {
     return NextResponse.json({ error: "Store name is required." }, { status: 400 });
+  }
+  if (!contactEmail || !contactPhone) {
+    return NextResponse.json(
+      { error: "A contact email and phone number are required." },
+      { status: 400 }
+    );
   }
 
   const { data: existing } = await supabaseAdmin
@@ -52,6 +67,12 @@ export async function POST(req) {
     store_name: storeName,
     store_slug: slugify(storeName),
     description: description || null,
+    sells_category: sellsCategory || null,
+    fulfillment_method: fulfillmentMethod || null,
+    contact_email: contactEmail || null,
+    contact_phone: contactPhone || null,
+    portfolio_url: portfolioUrl || null,
+    faith_statement: faithStatement || null,
   };
 
   const { data, error } = existing

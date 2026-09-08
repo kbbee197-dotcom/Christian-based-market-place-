@@ -35,7 +35,7 @@ export default function AccountSettingsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("display_name, username, account_type")
+        .select("display_name, username, account_type, role")
         .eq("id", userData.user.id)
         .single();
 
@@ -112,6 +112,15 @@ export default function AccountSettingsPage() {
         <Row href="/settings/account/help" label="Help Center" />
         <Row href="/settings/account/terms" label="Terms and Policies" />
       </div>
+
+      {profile?.role === "admin" && (
+        <>
+          <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Admin</p>
+          <div className="bg-white/5 rounded-xl mb-6 divide-y divide-white/10">
+            <Row href="/admin" label="Admin panel" />
+          </div>
+        </>
+      )}
 
       <p className="font-mono text-xs text-slate uppercase tracking-wide mb-2">Login</p>
       <button

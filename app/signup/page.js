@@ -88,6 +88,8 @@ export default function SignupPage() {
         <input
           required
           type="email"
+          name="email"
+          autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 mb-4 font-body"
@@ -98,6 +100,8 @@ export default function SignupPage() {
         <input
           required
           type="password"
+          name="password"
+          autoComplete="new-password"
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}

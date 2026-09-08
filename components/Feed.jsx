@@ -348,14 +348,17 @@ function FeedCard({ post, soundOn }) {
     setFollowing(nextOn);
   }
 
-  async function addToCart() {
+  async function addToCart(variantId) {
     const userId = await currentUserId();
     if (!userId) return setAuthNeeded(true);
     if (!post.product) return;
 
     await supabase
       .from("cart_items")
-      .upsert({ user_id: userId, product_id: post.product.id, quantity: 1 }, { onConflict: "user_id,product_id" });
+      .upsert(
+        { user_id: userId, product_id: post.product.id, variant_id: variantId || null, quantity: 1 },
+        { onConflict: "user_id,product_id,variant_id" }
+      );
     setAdded(true);
   }
 
@@ -460,7 +463,30 @@ function ActionButton({ icon, label, onClick }) {
 
 function ProductDrawer({ post, added, onAdd, onClose }) {
   const [activeImage, setActiveImage] = useState(0);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariantId, setSelectedVariantId] = useState(null);
   const images = post.product.images?.length ? post.product.images : null;
+
+  useEffect(() => {
+    let active = true;
+    supabase
+      .from("product_variants")
+      .select("*")
+      .eq("product_id", post.product.id)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (active) setVariants(data || []);
+      });
+    return () => {
+      active = false;
+    };
+  }, [post.product.id]);
+
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) || null;
+  const outOfStock = selectedVariant
+    ? selectedVariant.inventory_count === 0
+    : variants.length === 0 && post.product.inventory === 0;
+  const needsSelection = variants.length > 0 && !selectedVariantId;
 
   return (
     <motion.div
@@ -530,13 +556,39 @@ function ProductDrawer({ post, added, onAdd, onClose }) {
         </div>
       )}
 
+      {variants.length > 0 && (
+        <div className="mb-5">
+          <p className="font-body text-xs font-semibold text-ink/60 mb-2">
+            {variants[0].option_name}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {variants.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => setSelectedVariantId(v.id)}
+                disabled={v.inventory_count === 0}
+                className={`font-body text-sm px-4 py-2 rounded-full border disabled:opacity-40 disabled:line-through ${
+                  selectedVariantId === v.id
+                    ? "bg-ink text-parchment border-ink"
+                    : "bg-transparent text-ink border-ink/20"
+                }`}
+              >
+                {v.option_value}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <button
-        onClick={onAdd}
-        disabled={post.product.inventory === 0}
+        onClick={() => onAdd(selectedVariantId)}
+        disabled={outOfStock || needsSelection}
         className="w-full flex items-center justify-center gap-2 bg-ink text-parchment font-semibold py-3.5 rounded-full disabled:opacity-40"
       >
-        {post.product.inventory === 0
+        {outOfStock
           ? "Sold out"
+          : needsSelection
+          ? `Select ${variants[0]?.option_name?.toLowerCase() || "an option"}`
           : added
           ? "Added to cart ✓"
           : (<><Plus className="w-4 h-4" /> Add to cart</>)}

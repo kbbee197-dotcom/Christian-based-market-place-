@@ -9,6 +9,7 @@ export default function CameraRecorder({ onCapture, onCancel }) {
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const timerRef = useRef(null);
+  const streamRef = useRef(null);
 
   const [facingMode, setFacingMode] = useState("user");
   const [stream, setStream] = useState(null);
@@ -32,6 +33,7 @@ export default function CameraRecorder({ onCapture, onCancel }) {
         audio: true,
       });
       setStream(s);
+      streamRef.current = s;
       if (videoRef.current) {
         videoRef.current.srcObject = s;
       }
@@ -41,8 +43,9 @@ export default function CameraRecorder({ onCapture, onCancel }) {
   }
 
   function stopCamera() {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
   }
 

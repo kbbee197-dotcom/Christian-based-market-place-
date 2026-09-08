@@ -3,18 +3,18 @@
 import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 
-// Hide on pages that already have a chat interface, so it's not
-// floating on top of itself.
-const HIDDEN_ON = ["/support/chat", "/admin/assistant"];
+// The feed's top bar is the one clear spot on that page. Dashboard and
+// settings pages don't reserve bottom padding for an overlay, so those
+// get a real in-header icon instead (see DashboardLayout / SettingsLayout)
+// rather than a floating button that can land on top of content.
+const HIDDEN_PREFIXES = ["/support/chat", "/admin/assistant", "/dashboard", "/settings"];
 
 export default function FloatingSupportButton() {
   const pathname = usePathname();
-  if (HIDDEN_ON.includes(pathname)) return null;
+  if (HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    return null;
+  }
 
-  // The feed's top bar is the one clear spot on that page (everything else
-  // is claimed by action icons, the product bar, and the bottom nav). Every
-  // other page has a header up top instead, so a bottom-right FAB is the
-  // safer default there.
   const isFeed = pathname === "/feed";
 
   return (

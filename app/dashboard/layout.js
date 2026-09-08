@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 const TABS = [
@@ -55,6 +56,9 @@ export default function DashboardLayout({ children }) {
       <header className="border-b border-white/10 px-5 py-4 flex items-center justify-between">
         <h1 className="font-display text-lg font-semibold">Vendor dashboard</h1>
         <div className="flex items-center gap-4">
+          <a href="/support/chat" aria-label="Chat with AI support">
+            <Sparkles className="w-5 h-5 text-wick" />
+          </a>
           <a href="/settings" className="font-body text-sm text-wick font-semibold">
             Profile
           </a>

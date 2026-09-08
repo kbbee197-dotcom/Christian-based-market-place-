@@ -38,7 +38,7 @@ export async function POST(req) {
       if (order) {
         const { data: items } = await supabaseAdmin
           .from("order_items")
-          .select("product_id, quantity")
+          .select("product_id, variant_id, quantity")
           .eq("order_id", orderId);
 
         const productIds = (items || []).map((i) => i.product_id);
@@ -51,18 +51,34 @@ export async function POST(req) {
         }
 
         for (const item of items || []) {
-          const { data: product } = await supabaseAdmin
-            .from("products")
-            .select("inventory_count")
-            .eq("id", item.product_id)
-            .single();
+          if (item.variant_id) {
+            const { data: variant } = await supabaseAdmin
+              .from("product_variants")
+              .select("inventory_count")
+              .eq("id", item.variant_id)
+              .single();
 
-          if (product && product.inventory_count != null) {
-            const newCount = Math.max(0, product.inventory_count - item.quantity);
-            await supabaseAdmin
+            if (variant && variant.inventory_count != null) {
+              const newCount = Math.max(0, variant.inventory_count - item.quantity);
+              await supabaseAdmin
+                .from("product_variants")
+                .update({ inventory_count: newCount })
+                .eq("id", item.variant_id);
+            }
+          } else {
+            const { data: product } = await supabaseAdmin
               .from("products")
-              .update({ inventory_count: newCount })
-              .eq("id", item.product_id);
+              .select("inventory_count")
+              .eq("id", item.product_id)
+              .single();
+
+            if (product && product.inventory_count != null) {
+              const newCount = Math.max(0, product.inventory_count - item.quantity);
+              await supabaseAdmin
+                .from("products")
+                .update({ inventory_count: newCount })
+                .eq("id", item.product_id);
+            }
           }
         }
 

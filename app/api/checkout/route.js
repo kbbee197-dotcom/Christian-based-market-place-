@@ -25,7 +25,9 @@ export async function POST(req) {
 
   const { data: cartItems, error: cartError } = await supabase
     .from("cart_items")
-    .select("id, quantity, product:products(id, title, price_cents, store_id, inventory_count)")
+    .select(
+      "id, quantity, variant_id, product:products(id, title, price_cents, store_id, inventory_count), variant:product_variants(id, option_name, option_value, inventory_count)"
+    )
     .eq("user_id", userId);
 
   if (cartError) {
@@ -39,14 +41,17 @@ export async function POST(req) {
   const groupItems = cartItems.filter((item) => item.product.store_id === firstStoreId);
 
   for (const item of groupItems) {
-    const stock = item.product.inventory_count;
+    const stock = item.variant_id ? item.variant?.inventory_count : item.product.inventory_count;
+    const label = item.variant
+      ? `${item.product.title} (${item.variant.option_value})`
+      : item.product.title;
     if (stock != null && item.quantity > stock) {
       return NextResponse.json(
         {
           error:
             stock === 0
-              ? `${item.product.title} is sold out.`
-              : `Only ${stock} left of ${item.product.title}.`,
+              ? `${label} is sold out.`
+              : `Only ${stock} left of ${label}.`,
         },
         { status: 400 }
       );
@@ -85,6 +90,7 @@ export async function POST(req) {
     groupItems.map((item) => ({
       order_id: order.id,
       product_id: item.product.id,
+      variant_id: item.variant_id || null,
       quantity: item.quantity,
       unit_price_cents: item.product.price_cents,
     }))
@@ -97,7 +103,11 @@ export async function POST(req) {
       price_data: {
         currency: "usd",
         unit_amount: item.product.price_cents,
-        product_data: { name: item.product.title },
+        product_data: {
+          name: item.variant
+            ? `${item.product.title} (${item.variant.option_value})`
+            : item.product.title,
+        },
       },
     })),
     payment_intent_data: {

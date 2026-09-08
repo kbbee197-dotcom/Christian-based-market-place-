@@ -38,6 +38,13 @@ export default function HelpCenterPage() {
         <h1 className="font-display text-lg font-semibold">Help Center</h1>
       </div>
 
+      <a
+        href="/support/chat"
+        className="block bg-wick text-ink font-body font-semibold text-sm text-center px-4 py-3 rounded-full mb-6"
+      >
+        Chat with support
+      </a>
+
       <div className="space-y-4">
         {FAQS.map((item, i) => (
           <div key={i} className="bg-white/5 rounded-xl p-5">

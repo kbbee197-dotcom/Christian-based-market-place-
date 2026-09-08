@@ -9,6 +9,7 @@ const TABS = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/assistant", label: "Assistant" },
 ];
 
 export default function AdminLayout({ children }) {

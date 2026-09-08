@@ -15,10 +15,9 @@ export default function FloatingSupportButton() {
     <a
       href="/support/chat"
       aria-label="Chat with AI support"
-      className="fixed z-40 bottom-24 right-4 bg-wick text-ink rounded-full p-3.5 shadow-lg"
-      style={{ bottom: "calc(env(safe-area-inset-bottom) + 88px)" }}
+      className="fixed z-40 top-20 right-3 bg-wick/90 text-ink rounded-full p-2.5 shadow-lg"
     >
-      <Sparkles className="w-5 h-5" />
+      <Sparkles className="w-4 h-4" />
     </a>
   );
 }

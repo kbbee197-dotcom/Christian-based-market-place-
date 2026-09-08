@@ -22,11 +22,18 @@ async function callSocial(payload, token) {
   });
 }
 
+function optimizeVideoUrl(url) {
+  if (!url || !url.includes("/upload/")) return url;
+  // Ask Cloudinary for an auto-compressed, auto-format version instead of
+  // serving the original uploaded file, which cuts buffering on mobile data.
+  return url.replace("/upload/", "/upload/q_auto,f_auto/");
+}
+
 function normalize(row) {
   return {
     id: row.id,
     caption: row.caption,
-    videoUrl: row.video_url,
+    videoUrl: optimizeVideoUrl(row.video_url),
     thumbnailUrl: row.thumbnail_url,
     creator: {
       id: row.creator?.id,
@@ -383,6 +390,7 @@ function FeedCard({ post, soundOn }) {
             loop
             muted={!soundOn}
             playsInline
+            preload={playing ? "auto" : "metadata"}
           />
         ) : (
           !playing && (

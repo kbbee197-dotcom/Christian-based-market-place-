@@ -62,7 +62,7 @@ export default function CommentHistoryPage() {
             <div className="min-w-0 flex-1">
               <p className="font-body text-sm truncate">{item.body}</p>
               <p className="font-mono text-xs text-slate">
-                on "{item.post?.caption || "a video"}"
+                on &quot;{item.post?.caption || "a video"}&quot;
                 {" · "}
                 {new Date(item.created_at).toLocaleDateString()}
               </p>

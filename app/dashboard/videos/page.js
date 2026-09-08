@@ -86,7 +86,7 @@ export default function VideosPage() {
 
       {!loading && posts.length === 0 && (
         <p className="font-body text-sm text-slate">
-          You haven't posted any videos yet.
+          You haven&apos;t posted any videos yet.
         </p>
       )}
 

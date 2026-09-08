@@ -29,7 +29,7 @@ export default function TermsPage() {
             Accounts
           </h2>
           <p>
-            You're responsible for keeping your account secure. Vendor
+            You&apos;re responsible for keeping your account secure. Vendor
             accounts require admin approval before products and videos can
             be posted publicly.
           </p>
@@ -53,7 +53,7 @@ export default function TermsPage() {
           <p>
             Payments between buyers and sellers are processed through
             Stripe. This platform does not directly hold or custody funds
-            beyond what's required to facilitate a transaction.
+            beyond what&apos;s required to facilitate a transaction.
           </p>
         </section>
 

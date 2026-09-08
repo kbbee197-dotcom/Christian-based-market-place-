@@ -97,7 +97,7 @@ export default function CartPage() {
           {multiSeller && (
             <p className="font-body text-xs text-slate mb-3">
               Items are from more than one seller — checkout processes one
-              seller at a time. You'll come back here for the rest after the
+              seller at a time. You&apos;ll come back here for the rest after the
               first payment.
             </p>
           )}

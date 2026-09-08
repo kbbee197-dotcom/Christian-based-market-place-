@@ -31,7 +31,7 @@ export default function DashboardOverview() {
     return (
       <div>
         <p className="font-body text-slate mb-4">
-          You haven't set up a store yet. Set one up to start listing
+          You haven&apos;t set up a store yet. Set one up to start listing
           products and posting videos.
         </p>
         <a

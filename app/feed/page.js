@@ -36,7 +36,7 @@ export default async function FeedPage() {
     return (
       <main className="min-h-dvh flex items-center justify-center bg-ink text-parchment px-6 text-center">
         <p className="font-body text-slate">
-          Couldn't load the feed yet. Check that your Supabase environment
+          Couldn&apos;t load the feed yet. Check that your Supabase environment
           variables are set and that schema.sql has been run.
         </p>
       </main>

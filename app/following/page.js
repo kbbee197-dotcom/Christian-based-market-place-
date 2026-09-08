@@ -35,7 +35,7 @@ export default function FollowingPage() {
         <p className="font-body text-slate text-sm">Loading...</p>
       ) : creators.length === 0 ? (
         <p className="font-body text-slate text-sm">
-          You're not following anyone yet. Follow creators from the feed to see them here.
+          You&apos;re not following anyone yet. Follow creators from the feed to see them here.
         </p>
       ) : (
         <div className="space-y-3">

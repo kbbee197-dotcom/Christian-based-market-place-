@@ -41,7 +41,7 @@ export default function ApplyToSellPage() {
         <div>
           <p className="font-display text-xl font-semibold mb-2">Application submitted!</p>
           <p className="font-body text-slate text-sm mb-6">
-            We'll review your store and let you know once it's approved.
+            We&apos;ll review your store and let you know once it&apos;s approved.
           </p>
           <a href="/feed" className="text-wick underline font-body text-sm">
             Back to feed

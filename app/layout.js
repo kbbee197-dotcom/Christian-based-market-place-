@@ -1,5 +1,6 @@
 import { Fraunces, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import FloatingSupportButton from "@/components/FloatingSupportButton";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -27,7 +28,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${manrope.variable} ${plexMono.variable}`}>
-      <body className="font-body bg-ink text-parchment">{children}</body>
+      <body className="font-body bg-ink text-parchment">
+        {children}
+        <FloatingSupportButton />
+      </body>
     </html>
   );
 }

@@ -253,9 +253,14 @@ function FeedCard({ post, soundOn }) {
           watchTimer = setTimeout(() => {
             logWatch(post.id);
           }, 3000);
-        } else if (watchTimer) {
-          clearTimeout(watchTimer);
-          watchTimer = null;
+        } else {
+          if (watchTimer) {
+            clearTimeout(watchTimer);
+            watchTimer = null;
+          }
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+          }
         }
       },
       { threshold: 0.6 }

@@ -24,9 +24,10 @@ async function callSocial(payload, token) {
 
 function optimizeVideoUrl(url) {
   if (!url || !url.includes("/upload/")) return url;
-  // Ask Cloudinary for an auto-compressed, auto-format version instead of
-  // serving the original uploaded file, which cuts buffering on mobile data.
-  return url.replace("/upload/", "/upload/q_auto,f_auto/");
+  // Cap resolution to phone-screen width and use a lighter quality tier —
+  // full-resolution video has no benefit in a narrow vertical player, and
+  // was likely outpacing available mobile bandwidth mid-playback.
+  return url.replace("/upload/", "/upload/q_auto:eco,f_auto,w_720,c_limit/");
 }
 
 function normalize(row) {

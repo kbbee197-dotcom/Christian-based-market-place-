@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CameraRecorder from "@/components/CameraRecorder";
 import ThumbnailPicker from "@/components/ThumbnailPicker";
+import VideoEditor from "@/components/VideoEditor";
 
 export default function UploadPage() {
   const [userId, setUserId] = useState(null);
@@ -16,6 +17,7 @@ export default function UploadPage() {
   const [message, setMessage] = useState("");
   const [showCamera, setShowCamera] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [showEditor, setShowEditor] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -119,13 +121,22 @@ export default function UploadPage() {
           {file ? (
             <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3">
               <span className="font-body text-sm truncate max-w-[200px]">{file.name}</span>
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                className="font-body text-xs text-clay underline"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowEditor(true)}
+                  className="font-body text-xs text-wick font-semibold underline"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFile(null)}
+                  className="font-body text-xs text-clay underline"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex gap-3">
@@ -159,7 +170,18 @@ export default function UploadPage() {
           />
         )}
 
-        {file && (
+        {file && showEditor && (
+          <VideoEditor
+            file={file}
+            onCancel={() => setShowEditor(false)}
+            onDone={(editedFile) => {
+              setFile(editedFile);
+              setShowEditor(false);
+            }}
+          />
+        )}
+
+        {file && !showEditor && (
           <ThumbnailPicker file={file} onSelect={setThumbnailFile} />
         )}
 

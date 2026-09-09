@@ -1,12 +1,40 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, X, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function StoreView({ store, products }) {
+  const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [messaging, setMessaging] = useState(false);
+
+  async function messageSeller() {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    if (userId === store.owner_id) return;
+
+    setMessaging(true);
+    const { data: convo, error } = await supabase
+      .from("conversations")
+      .upsert(
+        { shopper_id: userId, vendor_id: store.owner_id, store_id: store.id },
+        { onConflict: "shopper_id,vendor_id" }
+      )
+      .select()
+      .single();
+    setMessaging(false);
+
+    if (!error && convo) {
+      router.push(`/messages/${convo.id}`);
+    }
+  }
 
   return (
     <main className="min-h-dvh bg-ink text-parchment px-5 pt-6 pb-10">
@@ -26,8 +54,16 @@ export default function StoreView({ store, products }) {
         </div>
       </div>
       {store.description && (
-        <p className="font-body text-sm text-slate mb-6">{store.description}</p>
+        <p className="font-body text-sm text-slate mb-4">{store.description}</p>
       )}
+
+      <button
+        onClick={messageSeller}
+        disabled={messaging}
+        className="bg-white/10 text-parchment font-body text-sm font-semibold px-4 py-2 rounded-full mb-6 disabled:opacity-60"
+      >
+        {messaging ? "Opening..." : "Message this seller"}
+      </button>
 
       <div className="grid grid-cols-2 gap-3">
         {products.map((p) => (

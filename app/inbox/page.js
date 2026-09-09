@@ -9,6 +9,7 @@ const TYPE_TEXT = {
   follow: "started following you",
   comment: "commented on your post",
   order: "placed an order",
+  message: "sent you a message",
 };
 
 export default function InboxPage() {
@@ -31,7 +32,7 @@ export default function InboxPage() {
 
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, type, read, created_at, actor:profiles!notifications_actor_id_fkey(username, display_name)")
+      .select("id, type, read, created_at, conversation_id, actor:profiles!notifications_actor_id_fkey(username, display_name)")
       .eq("recipient_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -56,30 +57,35 @@ export default function InboxPage() {
       )}
 
       <div className="space-y-2">
-        {notifications.map((n) => (
-          <div
-            key={n.id}
-            className={
-              "flex items-center gap-3 rounded-xl p-3 " +
-              (n.read ? "bg-white/5" : "bg-white/10")
-            }
-          >
-            <div className="w-10 h-10 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm shrink-0">
-              {(n.actor?.display_name || n.actor?.username || "?")[0].toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-body text-sm truncate">
-                <span className="font-semibold">
-                  {n.actor?.display_name || n.actor?.username || "Someone"}
-                </span>{" "}
-                {TYPE_TEXT[n.type] || "sent a notification"}
-              </p>
-              <p className="font-mono text-xs text-slate">
-                {new Date(n.created_at).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        ))}
+        {notifications.map((n) => {
+          const isMessage = n.type === "message" && n.conversation_id;
+          const Wrapper = isMessage ? "a" : "div";
+          return (
+            <Wrapper
+              key={n.id}
+              {...(isMessage ? { href: `/messages/${n.conversation_id}` } : {})}
+              className={
+                "flex items-center gap-3 rounded-xl p-3 " +
+                (n.read ? "bg-white/5" : "bg-white/10")
+              }
+            >
+              <div className="w-10 h-10 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm shrink-0">
+                {(n.actor?.display_name || n.actor?.username || "?")[0].toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-body text-sm truncate">
+                  <span className="font-semibold">
+                    {n.actor?.display_name || n.actor?.username || "Someone"}
+                  </span>{" "}
+                  {TYPE_TEXT[n.type] || "sent a notification"}
+                </p>
+                <p className="font-mono text-xs text-slate">
+                  {new Date(n.created_at).toLocaleString()}
+                </p>
+              </div>
+            </Wrapper>
+          );
+        })}
       </div>
 
       <BottomNav />

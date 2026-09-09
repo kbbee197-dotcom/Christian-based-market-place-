@@ -14,6 +14,7 @@ export default function ApplyToSellPage() {
   const [storeName, setStoreName] = useState("");
   const [description, setDescription] = useState("");
   const [sellsCategory, setSellsCategory] = useState("");
+  const [customSellsCategory, setCustomSellsCategory] = useState("");
   const [fulfillmentMethod, setFulfillmentMethod] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -30,13 +31,16 @@ export default function ApplyToSellPage() {
 
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
+    const resolvedSellsCategory =
+      sellsCategory === "Other" ? customSellsCategory.trim() || null : sellsCategory;
+
     const res = await fetch("/api/store", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         storeName,
         description,
-        sellsCategory,
+        sellsCategory: resolvedSellsCategory,
         fulfillmentMethod,
         contactEmail,
         contactPhone,
@@ -116,6 +120,15 @@ export default function ApplyToSellPage() {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+          {sellsCategory === "Other" && (
+            <input
+              required
+              value={customSellsCategory}
+              onChange={(e) => setCustomSellsCategory(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body mt-2"
+              placeholder="Type what you sell"
+            />
+          )}
         </div>
 
         <div>

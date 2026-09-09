@@ -53,6 +53,7 @@ function normalize(row) {
           category: row.product.category || null,
           tags: row.product.tags || [],
           inventory: row.product.inventory_count,
+          storeSlug: row.product.store?.store_slug || null,
         }
       : null,
     likeCount: row.likes?.[0]?.count ?? 0,
@@ -406,18 +407,26 @@ function FeedCard({ post, soundOn }) {
 
       <div className={`absolute left-4 right-24 z-10 ${post.product ? "bottom-36" : "bottom-28"}`}>
         <div className="flex items-center gap-2 mb-3">
-          {post.creator.avatarUrl ? (
-            <img
-              src={post.creator.avatarUrl}
-              alt={post.creator.name}
-              className="w-9 h-9 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm">
-              {post.creator.avatar}
-            </div>
-          )}
-          <span className="font-body font-semibold text-sm">{post.creator.name}</span>
+          <a
+            href={post.product?.storeSlug ? `/store/${post.product.storeSlug}` : "#"}
+            className="flex items-center gap-2"
+            onClick={(e) => {
+              if (!post.product?.storeSlug) e.preventDefault();
+            }}
+          >
+            {post.creator.avatarUrl ? (
+              <img
+                src={post.creator.avatarUrl}
+                alt={post.creator.name}
+                className="w-9 h-9 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-clay flex items-center justify-center font-display font-semibold text-sm">
+                {post.creator.avatar}
+              </div>
+            )}
+            <span className="font-body font-semibold text-sm">{post.creator.name}</span>
+          </a>
           <button
             onClick={toggleFollow}
             className={`text-xs font-semibold px-3 py-1 rounded-full border transition ${
@@ -592,6 +601,15 @@ function ProductDrawer({ post, added, onAdd, onClose }) {
             ))}
           </div>
         </div>
+      )}
+
+      {post.product.storeSlug && (
+        <a
+          href={`/store/${post.product.storeSlug}`}
+          className="block text-center font-body text-sm text-ink/60 underline mb-3"
+        >
+          Visit this vendor's store
+        </a>
       )}
 
       <button

@@ -37,6 +37,7 @@ export default function ProductsPage() {
   const [description, setDescription] = useState("");
   const [tagline, setTagline] = useState("");
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
   const [inventory, setInventory] = useState("");
@@ -87,7 +88,13 @@ export default function ProductsPage() {
     setPrice((p.price_cents / 100).toString());
     setDescription(p.description || "");
     setTagline(p.tagline || "");
-    setCategory(p.category || "");
+    if (p.category && !CATEGORIES.includes(p.category)) {
+      setCategory("Other");
+      setCustomCategory(p.category);
+    } else {
+      setCategory(p.category || "");
+      setCustomCategory("");
+    }
     setTagsInput((p.tags || []).join(", "));
     setImageUrls(p.image_urls || []);
     setInventory(p.inventory_count != null ? String(p.inventory_count) : "");
@@ -101,6 +108,7 @@ export default function ProductsPage() {
     setDescription("");
     setTagline("");
     setCategory("");
+    setCustomCategory("");
     setTagsInput("");
     setImageUrls([]);
     setInventory("");
@@ -192,6 +200,9 @@ export default function ProductsPage() {
         .map((t) => t.trim())
         .filter(Boolean);
 
+      const resolvedCategory =
+        category === "Other" ? customCategory.trim() || null : category;
+
       const payload = {
         storeId,
         title,
@@ -199,7 +210,7 @@ export default function ProductsPage() {
         imageUrls,
         description,
         tagline,
-        category,
+        category: resolvedCategory,
         tags,
         inventoryCount: inventory === "" ? null : parseInt(inventory, 10),
       };
@@ -325,6 +336,14 @@ export default function ProductsPage() {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+          {category === "Other" && (
+            <input
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body mt-2"
+              placeholder="Type your own category"
+            />
+          )}
         </div>
 
         <div>

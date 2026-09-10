@@ -9,12 +9,17 @@ export default function ConversationPage({ params }) {
   const router = useRouter();
   const conversationId = params.id;
   const [userId, setUserId] = useState(null);
+  const [kind, setKind] = useState(null); // "vendor" or "admin"
   const [otherUser, setOtherUser] = useState(null);
   const [otherId, setOtherId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const scrollRef = useRef(null);
+
+  const conversationsTable = kind === "admin" ? "admin_conversations" : "conversations";
+  const messagesTable = kind === "admin" ? "admin_messages" : "messages";
 
   useEffect(() => {
     async function load() {
@@ -26,7 +31,7 @@ export default function ConversationPage({ params }) {
       }
       setUserId(uid);
 
-      const { data: convo } = await supabase
+      const { data: vendorConvo } = await supabase
         .from("conversations")
         .select(
           `
@@ -36,19 +41,51 @@ export default function ConversationPage({ params }) {
         `
         )
         .eq("id", conversationId)
-        .single();
+        .maybeSingle();
 
-      if (!convo) {
+      let resolvedKind = null;
+      let resolvedOther = null;
+      let resolvedOtherId = null;
+
+      if (vendorConvo) {
+        resolvedKind = "vendor";
+        const isShopper = vendorConvo.shopper_id === uid;
+        resolvedOther = isShopper ? vendorConvo.vendor : vendorConvo.shopper;
+        resolvedOtherId = isShopper ? vendorConvo.vendor_id : vendorConvo.shopper_id;
+      } else {
+        const { data: adminConvo } = await supabase
+          .from("admin_conversations")
+          .select(
+            `
+            id, admin_id, user_id,
+            admin:profiles!admin_conversations_admin_id_fkey(id, username, display_name, avatar_url),
+            user:profiles!admin_conversations_user_id_fkey(id, username, display_name, avatar_url)
+          `
+          )
+          .eq("id", conversationId)
+          .maybeSingle();
+
+        if (adminConvo) {
+          resolvedKind = "admin";
+          const isAdmin = adminConvo.admin_id === uid;
+          resolvedOther = isAdmin ? adminConvo.user : adminConvo.admin;
+          resolvedOtherId = isAdmin ? adminConvo.user_id : adminConvo.admin_id;
+        }
+      }
+
+      if (!resolvedKind) {
+        setNotFound(true);
         setLoading(false);
         return;
       }
 
-      const isShopper = convo.shopper_id === uid;
-      setOtherUser(isShopper ? convo.vendor : convo.shopper);
-      setOtherId(isShopper ? convo.vendor_id : convo.shopper_id);
+      setKind(resolvedKind);
+      setOtherUser(resolvedOther);
+      setOtherId(resolvedOtherId);
 
+      const table = resolvedKind === "admin" ? "admin_messages" : "messages";
       const { data: msgs } = await supabase
-        .from("messages")
+        .from(table)
         .select("*")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
@@ -57,7 +94,7 @@ export default function ConversationPage({ params }) {
       setLoading(false);
 
       await supabase
-        .from("messages")
+        .from(table)
         .update({ read: true })
         .eq("conversation_id", conversationId)
         .neq("sender_id", uid)
@@ -67,11 +104,12 @@ export default function ConversationPage({ params }) {
   }, [conversationId, router]);
 
   useEffect(() => {
+    if (!kind) return;
     const channel = supabase
-      .channel(`conversation-${conversationId}`)
+      .channel(`${messagesTable}-${conversationId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
+        { event: "INSERT", schema: "public", table: messagesTable, filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
           setMessages((prev) =>
             prev.some((m) => m.id === payload.new.id) ? prev : [...prev, payload.new]
@@ -83,7 +121,7 @@ export default function ConversationPage({ params }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, kind, messagesTable]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -92,11 +130,11 @@ export default function ConversationPage({ params }) {
   async function sendMessage(e) {
     e.preventDefault();
     const body = input.trim();
-    if (!body || !userId) return;
+    if (!body || !userId || !kind) return;
     setInput("");
 
     const { data: sent, error } = await supabase
-      .from("messages")
+      .from(messagesTable)
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
@@ -109,15 +147,23 @@ export default function ConversationPage({ params }) {
 
     setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
 
-    await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", conversationId);
+    await supabase
+      .from(conversationsTable)
+      .update({ last_message_at: new Date().toISOString() })
+      .eq("id", conversationId);
 
     if (otherId) {
-      await supabase.from("notifications").insert({
+      const notifPayload = {
         recipient_id: otherId,
         actor_id: userId,
         type: "message",
-        conversation_id: conversationId,
-      });
+      };
+      if (kind === "admin") {
+        notifPayload.admin_conversation_id = conversationId;
+      } else {
+        notifPayload.conversation_id = conversationId;
+      }
+      await supabase.from("notifications").insert(notifPayload);
     }
   }
 
@@ -125,6 +171,14 @@ export default function ConversationPage({ params }) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-ink text-slate font-body">
         Loading...
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-ink text-slate font-body px-6 text-center">
+        Conversation not found.
       </div>
     );
   }
@@ -137,6 +191,9 @@ export default function ConversationPage({ params }) {
         </a>
         <h1 className="font-display text-lg font-semibold">
           {otherUser?.display_name || otherUser?.username || "Conversation"}
+          {kind === "admin" && (
+            <span className="ml-2 font-mono text-[10px] text-wick uppercase align-middle">Admin</span>
+          )}
         </h1>
       </div>
 

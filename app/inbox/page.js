@@ -32,7 +32,7 @@ export default function InboxPage() {
 
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, type, read, created_at, conversation_id, actor:profiles!notifications_actor_id_fkey(username, display_name)")
+      .select("id, type, read, created_at, conversation_id, admin_conversation_id, actor:profiles!notifications_actor_id_fkey(username, display_name)")
       .eq("recipient_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -58,12 +58,13 @@ export default function InboxPage() {
 
       <div className="space-y-2">
         {notifications.map((n) => {
-          const isMessage = n.type === "message" && n.conversation_id;
+          const threadId = n.conversation_id || n.admin_conversation_id;
+          const isMessage = n.type === "message" && threadId;
           const Wrapper = isMessage ? "a" : "div";
           return (
             <Wrapper
               key={n.id}
-              {...(isMessage ? { href: `/messages/${n.conversation_id}` } : {})}
+              {...(isMessage ? { href: `/messages/${threadId}` } : {})}
               className={
                 "flex items-center gap-3 rounded-xl p-3 " +
                 (n.read ? "bg-white/5" : "bg-white/10")

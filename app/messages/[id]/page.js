@@ -73,7 +73,9 @@ export default function ConversationPage({ params }) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new]);
+          setMessages((prev) =>
+            prev.some((m) => m.id === payload.new.id) ? prev : [...prev, payload.new]
+          );
         }
       )
       .subscribe();
@@ -93,13 +95,19 @@ export default function ConversationPage({ params }) {
     if (!body || !userId) return;
     setInput("");
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: conversationId,
-      sender_id: userId,
-      body,
-    });
+    const { data: sent, error } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender_id: userId,
+        body,
+      })
+      .select()
+      .single();
 
     if (error) return;
+
+    setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
 
     await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", conversationId);
 

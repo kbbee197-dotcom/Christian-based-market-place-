@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -82,15 +84,25 @@ export default function LoginPage() {
         />
 
         <label className="block font-body text-sm text-slate mb-1">Password</label>
+        <div className="relative mb-6">
         <input
           required
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 mb-6 font-body"
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
         />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
 
         {error && <p className="text-clay text-sm mb-4">{error}</p>}
 

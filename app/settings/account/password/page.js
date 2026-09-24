@@ -61,7 +61,7 @@ export default function ChangePasswordPage() {
           />
             <button
               type="button"
-              onClick={() => setNewPassword((v) => !v)}
+              onClick={() => setShowNewPassword((v) => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate"
               aria-label={showNewPassword ? "Hide password" : "Show password"}
             >
@@ -81,7 +81,7 @@ export default function ChangePasswordPage() {
           />
             <button
               type="button"
-              onClick={() => setConfirmPassword((v) => !v)}
+              onClick={() => setShowConfirmPassword((v) => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate"
               aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             >

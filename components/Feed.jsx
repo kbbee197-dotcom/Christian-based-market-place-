@@ -157,7 +157,6 @@ export default function Feed({ initialPosts = [] }) {
   return (
     <>
       <FeedHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div style={{position:"fixed",top:70,left:10,zIndex:9999,background:"red",color:"white",padding:"4px 8px",fontSize:12}}>tab: {activeTab} | posts: {posts.length}</div>
       {posts.length === 0 ? (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-ink text-parchment px-6 text-center gap-2">
           <p className="font-display text-xl">

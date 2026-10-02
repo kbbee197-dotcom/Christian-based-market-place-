@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Trash2, Pencil, X, Plus } from "lucide-react";
 
-const CATEGORIES = ["Apparel", "Home Goods", "Accessories", "Books", "Art", "Other"];
+const CATEGORIES = ["Fashion & Apparel", "Beauty & Wellness", "Home & Living", "Books & Media", "Art & Gifts", "Food & Beverage", "Kids & Family", "Church & Ministry"];
 
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();

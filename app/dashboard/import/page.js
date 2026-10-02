@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { supabase } from "@/lib/supabaseClient";
 
-const CATEGORIES = ["Apparel", "Home Goods", "Accessories", "Books", "Art", "Other"];
+const CATEGORIES = ["Fashion & Apparel", "Beauty & Wellness", "Home & Living", "Books & Media", "Art & Gifts", "Food & Beverage", "Kids & Family", "Church & Ministry"];
 
 function mapCategory(raw) {
   if (!raw) return null;

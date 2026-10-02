@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-const CATEGORIES = ["Apparel", "Home Goods", "Accessories", "Books", "Art", "Other"];
+const CATEGORIES = ["Fashion & Apparel", "Beauty & Wellness", "Home & Living", "Books & Media", "Art & Gifts", "Food & Beverage", "Kids & Family", "Church & Ministry"];
 const FULFILLMENT_OPTIONS = [
   { value: "ships", label: "Ships nationwide" },
   { value: "pickup", label: "Local pickup only" },

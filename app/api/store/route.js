@@ -48,6 +48,7 @@ export async function POST(req) {
     city,
     state,
     shippingTime,
+    agreedToStandards,
   } = await req.json();
   if (!storeName) {
     return NextResponse.json({ error: "Store name is required." }, { status: 400 });
@@ -65,6 +66,13 @@ export async function POST(req) {
     .eq("owner_id", userId)
     .maybeSingle();
 
+  if (!existing && agreedToStandards !== true) {
+    return NextResponse.json(
+      { error: "Please agree to the Community Standards to apply." },
+      { status: 400 }
+    );
+  }
+
   const payload = {
     owner_id: userId,
     store_name: storeName,
@@ -79,6 +87,7 @@ export async function POST(req) {
     ...(city !== undefined && { city: city?.trim() || null }),
     ...(state !== undefined && { state: state?.trim() || null }),
     ...(shippingTime !== undefined && { shipping_time: shippingTime?.trim() || null }),
+    ...(agreedToStandards === true && { standards_agreed_at: new Date().toISOString() }),
   };
 
   const { data, error } = existing

@@ -23,6 +23,7 @@ export default function ApplyToSellPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [agreedToStandards, setAgreedToStandards] = useState(false);
 
   async function submitApplication(e) {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function ApplyToSellPage() {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
+        agreedToStandards,
         storeName,
         description,
         sellsCategory: resolvedSellsCategory,
@@ -79,9 +81,9 @@ export default function ApplyToSellPage() {
       <a href="/settings" className="font-body text-sm text-slate underline">
         ← Back
       </a>
-      <h1 className="font-display text-2xl font-semibold mt-4 mb-2">Apply to sell</h1>
+      <h1 className="font-display text-2xl font-semibold mt-4 mb-2">Start selling on AB(SOUL)UTE</h1>
       <p className="font-body text-sm text-slate mb-6">
-        Tell us about your store. An admin will review your application before you can start listing products.
+        Tell us about your store and the purpose behind it. Our team reviews every application before you can start listing products.
       </p>
 
       <form onSubmit={submitApplication} className="space-y-4 max-w-sm">
@@ -197,6 +199,23 @@ export default function ApplyToSellPage() {
             placeholder="Share a bit, if you'd like."
           />
         </div>
+
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            required
+            checked={agreedToStandards}
+            onChange={(e) => setAgreedToStandards(e.target.checked)}
+            className="mt-1"
+          />
+          <span className="font-body text-sm text-slate">
+            I have read and agree to the{" "}
+            <a href="/community-standards" target="_blank" rel="noopener noreferrer" className="text-wick underline">
+              AB(SOUL)UTE Community Standards
+            </a>{" "}
+            and understand that AB(SOUL)UTE is a Christian marketplace.
+          </span>
+        </label>
 
         {message && <p className="font-body text-sm text-clay">{message}</p>}
         <button

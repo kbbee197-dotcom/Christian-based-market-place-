@@ -66,6 +66,7 @@ export default function Feed({ initialPosts = [] }) {
   const [soundOn, setSoundOn] = useState(false);
   const [activeTab, setActiveTab] = useState("discover");
   const [followingIds, setFollowingIds] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("");
 
   const allPosts = [...initialPosts, ...extraPosts]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -73,7 +74,11 @@ export default function Feed({ initialPosts = [] }) {
 
   const posts = allPosts.filter((post) => {
     if (activeTab === "following") return followingIds.includes(post.creator.id);
-    if (activeTab === "shop") return !!post.product;
+    if (activeTab === "shop") {
+      if (!post.product) return false;
+      if (activeCategory) return post.product.category === activeCategory;
+      return true;
+    }
     return true;
   });
 
@@ -156,7 +161,7 @@ export default function Feed({ initialPosts = [] }) {
 
   return (
     <>
-      <FeedHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+      <FeedHeader activeTab={activeTab} setActiveTab={setActiveTab} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       {posts.length === 0 ? (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-ink text-parchment px-6 text-center gap-2">
           <p className="font-display text-xl">
@@ -179,7 +184,7 @@ export default function Feed({ initialPosts = [] }) {
   );
 }
 
-function FeedHeader({ activeTab, setActiveTab }) {
+function FeedHeader({ activeTab, setActiveTab, activeCategory, setActiveCategory }) {
   const [isVendor, setIsVendor] = useState(false);
 
   useEffect(() => {
@@ -232,6 +237,22 @@ function FeedHeader({ activeTab, setActiveTab }) {
           <a href="/inbox" aria-label="Inbox"><Bell className="w-5 h-5 text-parchment" /></a>
         </div>
       </div>
+
+      {activeTab === "shop" && (
+        <div className="mt-2 flex items-center gap-1 overflow-x-auto bg-black/50 backdrop-blur-md rounded-full px-2 py-1.5">
+          {["", "Fashion & Apparel", "Beauty & Wellness", "Home & Living", "Books & Media", "Art & Gifts", "Food & Beverage", "Kids & Family", "Church & Ministry"].map((cat) => (
+            <button
+              key={cat || "all"}
+              onClick={() => setActiveCategory(cat)}
+              className={`font-body text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
+                activeCategory === cat ? "bg-wick text-ink" : "text-parchment/70"
+              }`}
+            >
+              {cat || "All"}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

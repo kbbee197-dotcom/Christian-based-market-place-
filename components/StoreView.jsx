@@ -10,6 +10,10 @@ export default function StoreView({ store, products }) {
   const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [messaging, setMessaging] = useState(false);
+  const location = [store.city, store.state].filter(Boolean).join(", ");
+  const memberSince = store.created_at
+    ? new Date(store.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+    : "";
 
   async function messageSeller() {
     const { data: userData } = await supabase.auth.getUser();
@@ -55,6 +59,14 @@ export default function StoreView({ store, products }) {
       </div>
       {store.description && (
         <p className="font-body text-sm text-slate mb-4">{store.description}</p>
+      )}
+
+      {(location || store.shipping_time || memberSince) && (
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4 font-body text-xs text-slate">
+          {location && <span>📍 {location}</span>}
+          {store.shipping_time && <span>🚚 Ships in {store.shipping_time}</span>}
+          {memberSince && <span>Member since {memberSince}</span>}
+        </div>
       )}
 
       <button

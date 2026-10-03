@@ -66,9 +66,48 @@ export default function Feed({ initialPosts = [] }) {
   const [soundOn, setSoundOn] = useState(false);
   const [activeTab, setActiveTab] = useState("discover");
   const [followingIds, setFollowingIds] = useState([]);
+  const [followingPosts, setFollowingPosts] = useState([]);
   const [activeCategory, setActiveCategory] = useState("");
 
-  const allPosts = [...initialPosts, ...extraPosts]
+  useEffect(() => {
+    if (activeTab !== "following" || followingIds.length === 0) return;
+    let active = true;
+    async function loadFollowingPosts() {
+      const { data } = await supabase
+        .from("videos_posts")
+        .select(
+          `
+          id,
+          caption,
+          video_url,
+          thumbnail_url,
+          created_at,
+          creator:profiles!videos_posts_creator_id_fkey (
+            id, username, display_name, avatar_url
+          ),
+          product:products (
+            id, title, price_cents, currency, image_urls, description, tagline, category, tags, inventory_count, is_active,
+            store:sellers_stores ( store_slug )
+          ),
+          likes:likes(count),
+          comments:comments(count)
+        `
+        )
+        .in("creator_id", followingIds)
+        .eq("flagged", false)
+        .in("visibility", ["public", "followers"])
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (active) setFollowingPosts(data || []);
+    }
+    loadFollowingPosts();
+    return () => {
+      active = false;
+    };
+  }, [activeTab, followingIds]);
+
+  const allPosts = [...initialPosts, ...extraPosts, ...(activeTab === "following" ? followingPosts : [])]
+    .filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map(normalize);
 

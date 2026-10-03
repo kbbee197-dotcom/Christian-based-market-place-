@@ -15,6 +15,55 @@ export default function StoreView({ store, products }) {
     ? new Date(store.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
     : "";
 
+  const [following, setFollowing] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function checkFollow() {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) return;
+      if (userId === store.owner_id) {
+        if (active) setIsOwner(true);
+        return;
+      }
+      const { data } = await supabase
+        .from("follows")
+        .select("follower_id")
+        .eq("follower_id", userId)
+        .eq("creator_id", store.owner_id)
+        .maybeSingle();
+      if (active) setFollowing(!!data);
+    }
+    checkFollow();
+    return () => {
+      active = false;
+    };
+  }, [store.owner_id]);
+
+  async function toggleFollow() {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    if (userId === store.owner_id) return;
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    const nextOn = !following;
+    setFollowing(nextOn);
+
+    const res = await fetch("/api/social", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ type: "follow", creatorId: store.owner_id, on: nextOn }),
+    });
+    if (!res.ok) setFollowing(!nextOn);
+  }
+
   async function messageSeller() {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
@@ -67,6 +116,17 @@ export default function StoreView({ store, products }) {
           {store.shipping_time && <span>🚚 Ships in {store.shipping_time}</span>}
           {memberSince && <span>Member since {memberSince}</span>}
         </div>
+      )}
+
+      {!isOwner && (
+        <button
+          onClick={toggleFollow}
+          className={`font-body text-sm font-semibold px-4 py-2 rounded-full mb-6 mr-2 border ${
+            following ? "border-white/20 text-slate" : "border-wick text-wick"
+          }`}
+        >
+          {following ? "Following" : "Follow"}
+        </button>
       )}
 
       <button

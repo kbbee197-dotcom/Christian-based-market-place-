@@ -16,6 +16,8 @@ export default function StorePage() {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [shippingTime, setShippingTime] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [checkingStripe, setCheckingStripe] = useState(false);
@@ -33,6 +35,8 @@ export default function StorePage() {
         setCity(data.city || "");
         setRegion(data.state || "");
         setShippingTime(data.shipping_time || "");
+        setContactEmail(data.contact_email || "");
+        setContactPhone(data.contact_phone || "");
 
         if (data.stripe_account_id && !data.stripe_onboarded) {
           setCheckingStripe(true);
@@ -63,8 +67,8 @@ export default function StorePage() {
         description,
         sellsCategory: store?.sells_category,
         fulfillmentMethod: store?.fulfillment_method,
-        contactEmail: store?.contact_email,
-        contactPhone: store?.contact_phone,
+        contactEmail,
+        contactPhone,
         portfolioUrl: store?.portfolio_url,
         faithStatement: store?.faith_statement,
         city,
@@ -132,6 +136,28 @@ export default function StorePage() {
             rows={3}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
             placeholder="What do you make, and what makes it yours?"
+          />
+        </div>
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Contact email</label>
+          <input
+            required
+            type="email"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Contact phone</label>
+          <input
+            required
+            type="tel"
+            value={contactPhone}
+            onChange={(e) => setContactPhone(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="(555) 123-4567"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">

@@ -13,6 +13,9 @@ export default function StorePage() {
   const [store, setStore] = useState(null);
   const [storeName, setStoreName] = useState("");
   const [description, setDescription] = useState("");
+  const [city, setCity] = useState("");
+  const [region, setRegion] = useState("");
+  const [shippingTime, setShippingTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [checkingStripe, setCheckingStripe] = useState(false);
@@ -27,6 +30,9 @@ export default function StorePage() {
         setStore(data);
         setStoreName(data.store_name);
         setDescription(data.description || "");
+        setCity(data.city || "");
+        setRegion(data.state || "");
+        setShippingTime(data.shipping_time || "");
 
         if (data.stripe_account_id && !data.stripe_onboarded) {
           setCheckingStripe(true);
@@ -52,7 +58,19 @@ export default function StorePage() {
     const res = await fetch("/api/store", {
       method: "POST",
       headers,
-      body: JSON.stringify({ storeName, description }),
+      body: JSON.stringify({
+        storeName,
+        description,
+        sellsCategory: store?.sells_category,
+        fulfillmentMethod: store?.fulfillment_method,
+        contactEmail: store?.contact_email,
+        contactPhone: store?.contact_phone,
+        portfolioUrl: store?.portfolio_url,
+        faithStatement: store?.faith_statement,
+        city,
+        state: region,
+        shippingTime,
+      }),
     });
     const json = await res.json();
 
@@ -114,6 +132,35 @@ export default function StorePage() {
             rows={3}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
             placeholder="What do you make, and what makes it yours?"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block font-body text-sm text-slate mb-1">City</label>
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+              placeholder="Fort Myers"
+            />
+          </div>
+          <div>
+            <label className="block font-body text-sm text-slate mb-1">State</label>
+            <input
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+              placeholder="FL"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Typical shipping time</label>
+          <input
+            value={shippingTime}
+            onChange={(e) => setShippingTime(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="3-5 business days"
           />
         </div>
         {message && <p className="font-body text-sm text-wick">{message}</p>}

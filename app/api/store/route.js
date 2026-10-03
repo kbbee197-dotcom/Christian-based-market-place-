@@ -45,6 +45,9 @@ export async function POST(req) {
     contactPhone,
     portfolioUrl,
     faithStatement,
+    city,
+    state,
+    shippingTime,
   } = await req.json();
   if (!storeName) {
     return NextResponse.json({ error: "Store name is required." }, { status: 400 });
@@ -73,6 +76,9 @@ export async function POST(req) {
     contact_phone: contactPhone || null,
     portfolio_url: portfolioUrl || null,
     faith_statement: faithStatement || null,
+    ...(city !== undefined && { city: city?.trim() || null }),
+    ...(state !== undefined && { state: state?.trim() || null }),
+    ...(shippingTime !== undefined && { shipping_time: shippingTime?.trim() || null }),
   };
 
   const { data, error } = existing

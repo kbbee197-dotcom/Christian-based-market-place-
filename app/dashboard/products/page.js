@@ -320,7 +320,7 @@ export default function ProductsPage() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body resize-none"
-            placeholder="Materials, sizing, details shoppers should know"
+            placeholder="Materials, sizing, details customers should know"
           />
         </div>
 

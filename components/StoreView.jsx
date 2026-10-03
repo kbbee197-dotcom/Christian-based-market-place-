@@ -101,7 +101,7 @@ export default function StoreView({ store, products }) {
       </div>
 
       {products.length === 0 && (
-        <p className="font-body text-sm text-slate">This store hasn't listed any products yet.</p>
+        <p className="font-body text-sm text-slate">Nothing to shop here yet. Check back soon.</p>
       )}
 
       <AnimatePresence>

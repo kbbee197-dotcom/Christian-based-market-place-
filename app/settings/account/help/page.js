@@ -3,8 +3,8 @@ import BottomNav from "@/components/BottomNav";
 
 const FAQS = [
   {
-    q: "How do I become a vendor?",
-    a: "Go to Settings and tap \"Apply to sell.\" An admin will review your application, and you'll be notified once approved.",
+    q: "How do I start selling?",
+    a: "Go to Settings and tap \"Apply to sell.\" You'll be asked to agree to the Community Standards, then our team will review your application and notify you once approved.",
   },
   {
     q: "How do I message a seller?",
@@ -12,11 +12,11 @@ const FAQS = [
   },
   {
     q: "How do payouts work?",
-    a: "Vendors connect a Stripe account from their dashboard. Once connected, buyer payments are routed directly to that account.",
+    a: "Sellers connect a Stripe account from their dashboard. Once connected, buyer payments are routed directly to that account.",
   },
   {
     q: "How do I delete a video I posted?",
-    a: "Go to your vendor dashboard, tap \"Your videos,\" and use the trash icon next to the video you want to remove.",
+    a: "Go to your seller dashboard, tap \"Your videos,\" and use the trash icon next to the video you want to remove.",
   },
   {
     q: "Can I control who sees my videos?",
@@ -24,7 +24,7 @@ const FAQS = [
   },
   {
     q: "How do I report a problem with an order?",
-    a: "Go to Orders from the top bar. If something's wrong, reach out to the seller directly through a comment on their post.",
+    a: "Go to Orders from the top bar. If something's wrong, message the seller from their store page.",
   },
 ];
 

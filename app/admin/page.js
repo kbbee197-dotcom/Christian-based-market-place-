@@ -48,7 +48,7 @@ export default function AdminStores() {
             </button>
           </div>
           <p className="font-mono text-xs text-slate">
-            {s.approved ? "Approved — visible to shoppers" : "Pending review"}
+            {s.approved ? "Approved — live in the marketplace" : "Pending review"}
           </p>
           {s.description && (
             <p className="font-body text-sm text-parchment/80">{s.description}</p>

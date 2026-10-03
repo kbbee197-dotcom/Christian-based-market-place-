@@ -53,7 +53,7 @@ export default function SignupPage() {
   return (
     <main className="min-h-dvh flex items-center justify-center bg-ink text-parchment px-6">
       <form onSubmit={handleSignup} className="w-full max-w-sm">
-        <h1 className="font-display text-2xl font-semibold mb-6">Create your account</h1>
+        <h1 className="font-display text-2xl font-semibold mb-6">Join AB(SOUL)UTE</h1>
 
         <label className="block font-body text-sm text-slate mb-2">Are you here to shop or sell?</label>
         <div className="flex gap-3 mb-4">

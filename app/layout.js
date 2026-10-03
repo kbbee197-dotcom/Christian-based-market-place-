@@ -22,7 +22,7 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata = {
   title: "Marketplace",
-  description: "A faith-rooted marketplace for makers, sellers, and shoppers.",
+  description: "Where Purpose Meets Marketplace. A Christian marketplace to shop, sell, create, and connect with soul.",
 };
 
 export default function RootLayout({ children }) {

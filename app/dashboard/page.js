@@ -50,7 +50,7 @@ export default function DashboardOverview() {
         <p className="font-mono text-xs text-slate uppercase tracking-wide mb-1">Store</p>
         <p className="font-display text-xl font-semibold">{store.store_name}</p>
         <p className="font-body text-sm text-slate mt-2">
-          {store.approved ? "Live and visible to shoppers" : "Waiting on admin approval"}
+          {store.approved ? "Live in the marketplace" : "Under review by our team"}
         </p>
       </div>
 

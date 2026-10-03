@@ -192,7 +192,7 @@ export default function UploadPage() {
             onChange={(e) => setCaption(e.target.value)}
             rows={2}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
-            placeholder="Tell shoppers what this is"
+            placeholder="Tell people what this is and the story behind it"
           />
         </div>
 

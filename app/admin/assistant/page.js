@@ -9,7 +9,7 @@ export default function AdminAssistantPage() {
     {
       role: "assistant",
       content:
-        "I can see the current pending vendor applications and flagged posts, comments, and products. Ask me things like \"summarize the pending applications\" or \"is anything in the flagged comments concerning?\" I'll give you my read — the final call is always yours.",
+        "I can see the current pending seller applications and flagged posts, comments, and products. Ask me things like \"summarize the pending applications\" or \"is anything in the flagged comments concerning?\" I'll give you my read — the final call is always yours.",
     },
   ]);
   const [input, setInput] = useState("");

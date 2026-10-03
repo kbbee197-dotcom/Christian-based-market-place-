@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-dvh bg-ink text-parchment">
       <header className="border-b border-white/10 px-5 py-4 flex items-center justify-between">
-        <h1 className="font-display text-lg font-semibold">Vendor dashboard</h1>
+        <h1 className="font-display text-lg font-semibold">Seller dashboard</h1>
         <div className="flex items-center gap-4">
           <a href="/messages" aria-label="Messages">
             <Mail className="w-5 h-5 text-wick" />

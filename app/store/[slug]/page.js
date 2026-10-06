@@ -8,7 +8,7 @@ export default async function StorePage({ params }) {
 
   const { data: store } = await supabase
     .from("sellers_stores")
-    .select("id, owner_id, store_name, description, logo_url, sells_category, city, state, shipping_time, created_at")
+    .select("id, owner_id, store_name, description, logo_url, sells_category, city, state, shipping_time, created_at, return_policy")
     .eq("store_slug", params.slug)
     .eq("approved", true)
     .maybeSingle();

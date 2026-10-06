@@ -137,6 +137,13 @@ export default function StoreView({ store, products }) {
         {messaging ? "Opening..." : "Message this seller"}
       </button>
 
+      {store.return_policy && (
+        <details className="mb-6 bg-white/5 rounded-xl px-4 py-3">
+          <summary className="font-body text-sm font-semibold cursor-pointer">Return &amp; refund policy</summary>
+          <p className="font-body text-sm text-slate mt-2 whitespace-pre-wrap">{store.return_policy}</p>
+        </details>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         {products.map((p) => (
           <button

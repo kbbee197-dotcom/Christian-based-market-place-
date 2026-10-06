@@ -49,6 +49,7 @@ export async function POST(req) {
     state,
     shippingTime,
     agreedToStandards,
+    returnPolicy,
   } = await req.json();
   if (!storeName) {
     return NextResponse.json({ error: "Store name is required." }, { status: 400 });
@@ -88,6 +89,7 @@ export async function POST(req) {
     ...(state !== undefined && { state: state?.trim() || null }),
     ...(shippingTime !== undefined && { shipping_time: shippingTime?.trim() || null }),
     ...(agreedToStandards === true && { standards_agreed_at: new Date().toISOString() }),
+    ...(returnPolicy !== undefined && { return_policy: returnPolicy?.trim().slice(0, 1500) || null }),
   };
 
   const { data, error } = existing

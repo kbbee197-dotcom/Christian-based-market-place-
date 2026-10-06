@@ -16,6 +16,7 @@ export default function StorePage() {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [shippingTime, setShippingTime] = useState("");
+  const [returnPolicy, setReturnPolicy] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -35,6 +36,7 @@ export default function StorePage() {
         setCity(data.city || "");
         setRegion(data.state || "");
         setShippingTime(data.shipping_time || "");
+        setReturnPolicy(data.return_policy || "");
         setContactEmail(data.contact_email || "");
         setContactPhone(data.contact_phone || "");
 
@@ -74,6 +76,7 @@ export default function StorePage() {
         city,
         state: region,
         shippingTime,
+        returnPolicy,
       }),
     });
     const json = await res.json();
@@ -187,6 +190,17 @@ export default function StorePage() {
             onChange={(e) => setShippingTime(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
             placeholder="3-5 business days"
+          />
+        </div>
+        <div>
+          <label className="block font-body text-sm text-slate mb-1">Return / refund policy</label>
+          <textarea
+            value={returnPolicy}
+            onChange={(e) => setReturnPolicy(e.target.value)}
+            rows={4}
+            maxLength={1500}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-body"
+            placeholder="Example: Returns accepted within 14 days if unused. Refunds issued once the item arrives back."
           />
         </div>
         {message && <p className="font-body text-sm text-wick">{message}</p>}
